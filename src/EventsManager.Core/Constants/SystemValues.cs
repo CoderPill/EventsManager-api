@@ -1,7 +1,4 @@
 ﻿using EventsManager.Core.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EventsManager.Core.Constants
 {
@@ -20,7 +17,7 @@ namespace EventsManager.Core.Constants
             public const string Event_Venue = nameof(EventEntity.Venue);
             public const string Event_Reservations = nameof(EventEntity.Reservations);
 
-           
+
             public const string Reservation_Event = nameof(ReservationEntity.Event);
         }
     }

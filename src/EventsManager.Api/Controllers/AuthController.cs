@@ -1,10 +1,9 @@
-﻿using EventsManager.Application.Common.DTOs;
+﻿using EventsManager.Api.Extensions;
 using EventsManager.Application.Features.User;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
-using EventsManager.Api.Extensions;
 
 namespace EventsManager.Api.Controllers
 {

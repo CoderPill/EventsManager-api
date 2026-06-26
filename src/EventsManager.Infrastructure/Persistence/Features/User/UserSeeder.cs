@@ -3,9 +3,6 @@ using EventsManager.Core.Entities;
 using EventsManager.Core.Enums;
 using EventsManager.Infrastructure.Settings;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EventsManager.Infrastructure.Persistence.Features.User
 {

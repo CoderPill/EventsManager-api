@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace EventsManager.Core.Constants
+﻿namespace EventsManager.Core.Constants
 {
     public static class SystemMessages
     {

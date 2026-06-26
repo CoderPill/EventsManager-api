@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace EventsManager.Infrastructure.Settings
+﻿namespace EventsManager.Infrastructure.Settings
 {
     public class ConnectionStringsSettings
     {

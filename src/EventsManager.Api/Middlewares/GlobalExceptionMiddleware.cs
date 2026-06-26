@@ -1,9 +1,5 @@
 ﻿using EventsManager.Core.Constants;
 using EventsManager.Infrastructure.Tools.Logging;
-using System.Diagnostics;
-using System.Net;
-using System.Text;
-using System.Text.Json;
 
 namespace EventsManager.Api.Middlewares
 {

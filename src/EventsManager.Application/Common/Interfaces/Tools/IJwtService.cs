@@ -1,7 +1,4 @@
 ﻿using EventsManager.Application.Common.DTOs;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EventsManager.Application.Common.Interfaces.Tools
 {

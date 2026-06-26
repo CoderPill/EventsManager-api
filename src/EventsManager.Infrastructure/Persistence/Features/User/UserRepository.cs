@@ -2,11 +2,6 @@
 using EventsManager.Core.Entities;
 using EventsManager.Infrastructure.Persistence.Common.Context;
 using EventsManager.Infrastructure.Persistence.Common.Repository;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Identity.Client;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EventsManager.Infrastructure.Persistence.Features.User
 {

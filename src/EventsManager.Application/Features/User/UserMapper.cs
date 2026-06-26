@@ -1,9 +1,5 @@
 ﻿using EventsManager.Application.Common.DTOs;
 using EventsManager.Core.Entities;
-using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Text;
 
 namespace EventsManager.Application.Features.User
 {

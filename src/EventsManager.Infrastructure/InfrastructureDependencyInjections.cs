@@ -10,10 +10,6 @@ using EventsManager.Infrastructure.Tools;
 using EventsManager.Infrastructure.Tools.Logging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.Text;
 
 namespace EventsManager.Infrastructure
 {
@@ -31,7 +27,7 @@ namespace EventsManager.Infrastructure
                 services.AddScoped<IPasswordHasher, PasswordHasher>()
                         .AddScoped<IJwtService, JwtService>()
                         .AddScoped<IAlphaNumericCodeGenerator, AlphaNumericCodeGenerator>();
-                
+
                 services.AddScoped<IUserRepository, UserRepository>()
                         .AddScoped<IEventRepository, EventRepository>()
                         .AddScoped<IReservationRepository, ReservationRepository>()

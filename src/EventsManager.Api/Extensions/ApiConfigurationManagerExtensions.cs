@@ -1,5 +1,4 @@
 ﻿using EventsManager.Core.Constants;
-using EventsManager.Infrastructure.Settings;
 
 namespace EventsManager.Api.Extensions
 {
@@ -7,10 +6,10 @@ namespace EventsManager.Api.Extensions
     {
         extension(IConfigurationManager configuration)
         {
-            public T GetSetting<T>() where T : class 
+            public T GetSetting<T>() where T : class
             {
                 return configuration.GetSection(typeof(T).Name).Get<T>()
-                    ?? throw new InvalidOperationException(string.Format(SystemMessages.Infrastructure.Error_InitConfiguration, typeof(T).Name)); 
+                    ?? throw new InvalidOperationException(string.Format(SystemMessages.Infrastructure.Error_InitConfiguration, typeof(T).Name));
             }
             public T GetSetting<T>(string key) where T : class
             {

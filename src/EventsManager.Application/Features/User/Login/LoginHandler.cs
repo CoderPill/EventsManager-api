@@ -6,9 +6,6 @@ using EventsManager.Application.Common.UseCases;
 using EventsManager.Core.Constants;
 using EventsManager.Core.Entities;
 using FluentValidation;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EventsManager.Application.Features.User.Login
 {
@@ -24,7 +21,7 @@ namespace EventsManager.Application.Features.User.Login
             _passwordHasher = passwordHasher;
             _jwtService = jwtService;
         }
-        
+
         protected override async Task<Result<string>> OnExecute(LoginRequest request)
         {
             return await ValidateCredentials(request)

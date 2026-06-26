@@ -1,11 +1,7 @@
 ﻿using EventsManager.Application.Common.Interfaces.Persistence;
 using EventsManager.Core.Entities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query;
-using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Text;
 
 namespace EventsManager.Infrastructure.Persistence.Common.Repository
 {
@@ -40,7 +36,7 @@ namespace EventsManager.Infrastructure.Persistence.Common.Repository
             , bool noTracking = true
             , params string[] includes)
         {
-            return await BuildQuery(predicate, noTracking,includes).ToListAsync();
+            return await BuildQuery(predicate, noTracking, includes).ToListAsync();
         }
 
         public async Task<TEntity?> GetFirstOrDefaultAsync(
@@ -53,8 +49,8 @@ namespace EventsManager.Infrastructure.Persistence.Common.Repository
 
         protected IQueryable<TEntity> BuildQuery(
             Expression<Func<TEntity, bool>>? predicate = null
-            ,bool noTracking = true
-            ,params string[] includes)
+            , bool noTracking = true
+            , params string[] includes)
         {
             IQueryable<TEntity> query = _DbSet;
 

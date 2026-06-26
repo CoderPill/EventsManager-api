@@ -1,8 +1,5 @@
 ﻿using EventsManager.Core.Entities;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EventsManager.Infrastructure.Persistence.Common.Context
 {

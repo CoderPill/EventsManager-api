@@ -3,9 +3,6 @@ using EventsManager.Application.Common.Interfaces.Tools;
 using EventsManager.Application.Common.ResultPattern;
 using EventsManager.Application.Common.UseCases;
 using FluentValidation;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EventsManager.Application.Features.User.Logout
 {
@@ -20,7 +17,7 @@ namespace EventsManager.Application.Features.User.Logout
 
         protected override Task<Result<Unit>> OnExecute(LogoutRequest request)
         {
-            _jwtService.Revoke(JwtRevokeRequest.From(request.Jti,request.ExpiresDate));
+            _jwtService.Revoke(JwtRevokeRequest.From(request.Jti, request.ExpiresDate));
             return Result.Success().ToTask();
         }
     }

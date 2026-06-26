@@ -3,9 +3,6 @@ using EventsManager.Infrastructure.Persistence.Features.User;
 using EventsManager.Infrastructure.Persistence.Features.Venue;
 using EventsManager.Infrastructure.Settings;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EventsManager.Infrastructure.Persistence.Common.DataSeed
 {
