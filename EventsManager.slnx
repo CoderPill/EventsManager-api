@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/EventsManager.Api/EventsManager.Api.csproj" Id="83618efc-355b-4677-b47a-15f788a99575" />
+    <Project Path="src/EventsManager.Application/EventsManager.Application.csproj" Id="0bb62995-ea8b-40cf-ba35-02a10923a7b9" />
+    <Project Path="src/EventsManager.Core/EventsManager.Core.csproj" Id="aaa1f901-db59-43d5-bea7-3d69b190e8a2" />
+    <Project Path="src/EventsManager.Infrastructure/EventsManager.Infrastructure.csproj" Id="e5346cc0-50c0-4c0a-a8a3-7289484a481c" />
+  </Folder>
+</Solution>
