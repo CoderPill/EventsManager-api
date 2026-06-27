@@ -15,20 +15,20 @@ namespace EventsManager.Infrastructure.Persistence.Features.Venue
             builder.Property(x => x.Id)
                 .ValueGeneratedOnAdd();
 
-            builder.Property(x => x.CreateDate)
+            builder.Property(x => x.CreationDate)
                 .IsRequired()
                 .HasColumnType("datetime2");
 
             builder.Property(x => x.Name)
             .IsRequired()
-            .HasMaxLength(150);
+            .HasMaxLength(32);
 
             builder.Property(x => x.Capacity)
                 .IsRequired();
 
             builder.Property(x => x.City)
                 .IsRequired()
-                .HasMaxLength(100);
+                .HasMaxLength(32);
         }
     }
 }

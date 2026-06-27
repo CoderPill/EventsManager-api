@@ -15,17 +15,17 @@ namespace EventsManager.Infrastructure.Persistence.Features.Event
             builder.Property(x => x.Id)
                 .ValueGeneratedOnAdd();
 
-            builder.Property(x => x.CreateDate)
+            builder.Property(x => x.CreationDate)
                 .IsRequired()
                 .HasColumnType("datetime2");
 
             builder.Property(x => x.Title)
                 .IsRequired()
-                .HasMaxLength(200);
+                .HasMaxLength(100);
 
             builder.Property(x => x.Description)
                 .IsRequired()
-                .HasMaxLength(2000);
+                .HasMaxLength(500);
 
             builder.Property(x => x.VenueId)
                 .IsRequired();

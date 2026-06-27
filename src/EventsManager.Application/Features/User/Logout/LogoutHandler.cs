@@ -9,7 +9,7 @@ namespace EventsManager.Application.Features.User.Logout
     public class LogoutHandler : BaseUseCase<LogoutRequest, Unit>
     {
         private readonly IJwtService _jwtService;
-        public LogoutHandler(IJwtService jwtService, IValidator<LogoutRequest> validator)
+        public LogoutHandler(IValidator<LogoutRequest> validator, IJwtService jwtService)
             : base(validator)
         {
             _jwtService = jwtService;

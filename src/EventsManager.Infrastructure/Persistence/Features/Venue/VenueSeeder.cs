@@ -12,9 +12,9 @@ namespace EventsManager.Infrastructure.Persistence.Features.Venue
 
             var defaultVenues = new List<VenueEntity>
         {
-            new() { Name="Auditorio Central",Capacity=200,City="Bogota", CreateDate = DateTime.Now },
-            new() { Name="Sala Norte",Capacity=50,City="Bogota", CreateDate = DateTime.Now },
-            new() { Name="Sala Sur",Capacity=500,City="Medellin", CreateDate = DateTime.Now }
+            new() { Name="Auditorio Central",Capacity=200,City="Bogota", CreationDate = DateTime.Now },
+            new() { Name="Sala Norte",Capacity=50,City="Bogota", CreationDate = DateTime.Now },
+            new() { Name="Sala Sur",Capacity=500,City="Medellin", CreationDate = DateTime.Now }
         };
 
             await context.Set<VenueEntity>().AddRangeAsync(defaultVenues);

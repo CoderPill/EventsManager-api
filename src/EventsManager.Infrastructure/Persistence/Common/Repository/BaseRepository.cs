@@ -22,8 +22,8 @@ namespace EventsManager.Infrastructure.Persistence.Common.Repository
         }
         public virtual async Task AddAsync(TEntity entity)
         {
-            if (entity.CreateDate == default)
-                entity.CreateDate = DateTime.Now;
+            if (entity.CreationDate == default)
+                entity.CreationDate = DateTime.Now;
             await _DbSet.AddAsync(entity);
         }
 

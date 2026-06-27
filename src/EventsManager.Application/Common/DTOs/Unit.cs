@@ -1,4 +1,4 @@
-﻿namespace EventsManager.Application.Common.ResultPattern
+﻿namespace EventsManager.Application.Common.DTOs
 {
     public class Unit
     {

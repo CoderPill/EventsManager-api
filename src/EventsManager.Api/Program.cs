@@ -15,7 +15,6 @@ namespace EventsManager.Api
         public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
             //Carga las variables de entorno que concuerden con el prefijo definido en SystemValues.EnvironmentPrefix
             builder.Configuration.AddEnvironmentVariables(prefix: SystemValues.Infrastructure.EnvironmentPrefix);
             //Obtiene los valores de configuracion
@@ -23,7 +22,9 @@ namespace EventsManager.Api
             ConnectionStringsSettings connectionStringsSettings = builder.Configuration.GetSetting<ConnectionStringsSettings>();
             AdminSeedSettings adminSeedSettings = builder.Configuration.GetSetting<AdminSeedSettings>();
             JwtSettings jwtSettings = builder.Configuration.GetSetting<JwtSettings>();
+            SmtpSettings smtpSettings = builder.Configuration.GetSetting<SmtpSettings>();
 
+            builder.Services.AddSingleton(smtpSettings);
             builder.Services.AddSingleton(jwtSettings);
 
             builder.Services.AddControllers().AddJsonOptions((options) =>

@@ -24,7 +24,7 @@ namespace EventsManager.Infrastructure.Persistence.Features.User
                 PasswordHash = hashedPass,
                 Role = UserRole.Admin,
                 IsActive = true,
-                CreateDate = DateTime.Now
+                CreationDate = DateTime.Now
             };
 
             await context.Set<UserEntity>().AddAsync(adminUser);

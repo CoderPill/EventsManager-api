@@ -15,7 +15,7 @@ namespace EventsManager.Infrastructure.Persistence.Features.Reservation
             builder.Property(x => x.Id)
                 .ValueGeneratedOnAdd();
 
-            builder.Property(x => x.CreateDate)
+            builder.Property(x => x.CreationDate)
                 .IsRequired()
                 .HasColumnType("datetime2");
 
@@ -24,11 +24,11 @@ namespace EventsManager.Infrastructure.Persistence.Features.Reservation
 
             builder.Property(x => x.BuyerName)
                 .IsRequired()
-                .HasMaxLength(150);
+                .HasMaxLength(32);
 
             builder.Property(x => x.BuyerEmail)
                 .IsRequired()
-                .HasMaxLength(320);
+                .HasMaxLength(64);
 
             builder.Property(x => x.Quantity)
                 .IsRequired();
@@ -38,7 +38,7 @@ namespace EventsManager.Infrastructure.Persistence.Features.Reservation
                 .IsRequired();
 
             builder.Property(x => x.ReservationCode)
-                .HasMaxLength(8);
+                .HasMaxLength(16);
 
             builder.Property(x => x.CancelDate)
                 .HasColumnType("datetime2");

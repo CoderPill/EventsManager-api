@@ -1,5 +1,7 @@
 ﻿using EventsManager.Api.Extensions;
 using EventsManager.Application.Features.User;
+using EventsManager.Application.Features.User.Login;
+using EventsManager.Application.Features.User.Logout;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
@@ -7,13 +9,14 @@ using System.Net;
 
 namespace EventsManager.Api.Controllers
 {
-    public class AuthController : Controller
+    public class AuthController : BaseApiController
     {
         private readonly UserUseCases _userUseCases;
         public AuthController(UserUseCases userUseCases)
         {
             _userUseCases = userUseCases;
         }
+        [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginRequest request)
         {
@@ -21,7 +24,6 @@ namespace EventsManager.Api.Controllers
                 .ToActionResult();
         }
         [HttpPost("logout")]
-        [Authorize]
         public async Task<IActionResult> Logout()
         {
             var jti = User.FindFirst(JwtRegisteredClaimNames.Jti)!.Value;

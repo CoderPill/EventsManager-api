@@ -14,7 +14,7 @@ namespace EventsManager.Application.Features.User.Login
         private readonly IUserRepository _userRepository;
         private readonly IPasswordHasher _passwordHasher;
         private readonly IJwtService _jwtService;
-        public LoginHandler(IUserRepository userRepository, IPasswordHasher passwordHasher, IJwtService jwtService, IValidator<LoginRequest> validator)
+        public LoginHandler(IValidator<LoginRequest> validator, IUserRepository userRepository, IPasswordHasher passwordHasher, IJwtService jwtService)
             : base(validator)
         {
             _userRepository = userRepository;
@@ -31,9 +31,7 @@ namespace EventsManager.Application.Features.User.Login
         {
             UserEntity? tempUser = await _userRepository.GetByUsernameAsync(request.Username);
             if (tempUser is null || !_passwordHasher.Verify(request.Password, tempUser.PasswordHash))
-            {
                 return Result.Failure<JwtGenerateRequest>(SystemMessages.User.Error_Credentials);
-            }
             return tempUser.ToJwtGenerateRequest();
         }
         private Result<string> GenerateToken(JwtGenerateRequest request)

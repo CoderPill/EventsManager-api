@@ -15,13 +15,13 @@ namespace EventsManager.Infrastructure.Persistence.Features.User
             builder.Property(x => x.Id)
                 .ValueGeneratedOnAdd();
 
-            builder.Property(x => x.CreateDate)
+            builder.Property(x => x.CreationDate)
                 .IsRequired()
                 .HasColumnType("datetime2");
 
             builder.Property(x => x.Username)
                 .IsRequired()
-                .HasMaxLength(100);
+                .HasMaxLength(64);
 
             builder.HasIndex(x => x.Username)
                 .IsUnique();

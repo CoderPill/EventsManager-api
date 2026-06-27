@@ -1,12 +1,13 @@
-﻿using System.Collections.Immutable;
+﻿using EventsManager.Application.Common.DTOs;
+using System.Collections.Immutable;
 
 namespace EventsManager.Application.Common.ResultPattern
 {
     public struct Result<T>
     {
         public bool IsSuccess => Errors.IsDefaultOrEmpty && _isInitialized;
-        public readonly T Value;
-        public readonly ImmutableArray<string> Errors;
+        public T Value { get; }
+        public ImmutableArray<string> Errors { get; }
         private readonly bool _isInitialized;
 
         internal Result(T value)

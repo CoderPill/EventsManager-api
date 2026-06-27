@@ -19,10 +19,13 @@ namespace EventsManager.Infrastructure
         {
             public void AddInfrastructure(ConnectionStringsSettings connectionStringsSettings)
             {
+                
                 services.AddSingleton<IExceptionInfoExtractor, ExceptionInfoExtractor>();
                 services.AddSingleton<IExceptionLogStorage, ExceptionLogStorage>();
 
                 services.AddDbContext<DbContextEventsManager>(options => options.UseSqlServer(connectionStringsSettings.DefaultConnection));
+
+                services.AddScoped<IEmailService, EmailService>();
 
                 services.AddScoped<IPasswordHasher, PasswordHasher>()
                         .AddScoped<IJwtService, JwtService>()

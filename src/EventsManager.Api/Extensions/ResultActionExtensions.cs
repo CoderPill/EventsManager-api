@@ -15,18 +15,18 @@ namespace EventsManager.Api.Extensions
                 {
                     return successCode switch
                     {
-                        HttpStatusCode.OK => new OkObjectResult(r.Value),
-                        HttpStatusCode.Created => new CreatedResult(string.Empty, r.Value),
+                        HttpStatusCode.OK => new OkObjectResult((Result<T>)r),
+                        HttpStatusCode.Created => new CreatedResult(string.Empty, (Result<T>)r),
                         HttpStatusCode.NoContent => new NoContentResult(),
-                        _ => new ObjectResult(r.Value) { StatusCode = (int)successCode }
+                        _ => new ObjectResult(r) { StatusCode = (int)successCode }
                     };
                 }
 
                 return failureCode switch
                 {
-                    HttpStatusCode.BadRequest => new BadRequestObjectResult(r.Errors),
-                    HttpStatusCode.NotFound => new NotFoundObjectResult(r.Errors),
-                    _ => new ObjectResult(r.Errors) { StatusCode = (int)failureCode }
+                    HttpStatusCode.BadRequest => new BadRequestObjectResult((Result<T>)r),
+                    HttpStatusCode.NotFound => new NotFoundObjectResult((Result<T>)r),
+                    _ => new ObjectResult((Result<T>)r) { StatusCode = (int)failureCode }
                 };
             }
         }
