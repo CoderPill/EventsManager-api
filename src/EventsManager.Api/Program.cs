@@ -37,7 +37,7 @@ namespace EventsManager.Api
             builder.Services.CustomAuthentication(jwtSettings);
             builder.Services.SwaggerConfiguration();
 
-            builder.Services.AddInfrastructure(connectionStringsSettings);
+            builder.Services.AddInfrastructure(connectionStringsSettings, smtpSettings);
             builder.Services.AddApplication();
 
             var app = builder.Build();

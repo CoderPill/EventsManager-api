@@ -1,8 +1,5 @@
 ﻿using EventsManager.Core.Constants;
 using FluentValidation;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EventsManager.Application.Features.Event.Add
 {

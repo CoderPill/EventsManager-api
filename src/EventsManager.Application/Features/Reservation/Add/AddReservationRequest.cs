@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace EventsManager.Application.Features.Reservation.Add
+﻿namespace EventsManager.Application.Features.Reservation.Add
 {
     public record AddReservationRequest(
         int EventId
@@ -12,7 +8,7 @@ namespace EventsManager.Application.Features.Reservation.Add
     {
         public static AddReservationRequest From(int eventId, int quantity, string buyerName, string buyerEmail)
         {
-            return new(eventId,quantity,buyerName,buyerEmail);
+            return new(eventId, quantity, buyerName, buyerEmail);
         }
     }
 }

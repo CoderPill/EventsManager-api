@@ -1,9 +1,5 @@
 ﻿using EventsManager.Application.Features.Venue.Add;
 using EventsManager.Core.Entities;
-using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace EventsManager.Application.Features.Venue
 {
@@ -13,16 +9,16 @@ namespace EventsManager.Application.Features.Venue
         {
             public VenueDto ToDto()
             {
-                return VenueDto.From(instance.Id, instance.Name, instance.Capacity, instance.City,instance.CreationDate);
+                return VenueDto.From(instance.Id, instance.Name, instance.Capacity, instance.City, instance.CreationDate);
             }
         }
         extension(AddVenueRequest instance)
         {
             public VenueEntity ToVenueEntity()
             {
-                return new () { Name = instance.Name ,Capacity = instance.Capacity ,City = instance.City};
+                return new() { Name = instance.Name, Capacity = instance.Capacity, City = instance.City };
             }
         }
-        
+
     }
 }

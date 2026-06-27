@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace EventsManager.Application.Features.User.Logout
+﻿namespace EventsManager.Application.Features.User.Logout
 {
     public record LogoutRequest(string Jti, DateTime ExpiresDate)
     {

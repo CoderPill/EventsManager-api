@@ -1,14 +1,10 @@
 ﻿using EventsManager.Application.Common.DTOs;
 using EventsManager.Application.Common.Interfaces.Tools;
 using EventsManager.Infrastructure.Settings;
-using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Mail;
-using System.Text;
 
-namespace EventsManager.Infrastructure.Tools
+namespace EventsManager.Infrastructure.Tools.Email
 {
     public class EmailService : IEmailService
     {

@@ -1,6 +1,7 @@
 ﻿using EventsManager.Application.Features.Event;
 using EventsManager.Application.Features.Event.Add;
 using EventsManager.Application.Features.Event.Get;
+using EventsManager.Application.Features.Event.GetOccupationReport;
 using EventsManager.Application.Features.Reservation;
 using EventsManager.Application.Features.Reservation.Add;
 using EventsManager.Application.Features.Reservation.Cancel;
@@ -34,7 +35,7 @@ namespace EventsManager.Application
                 services.AddScoped<VenueUseCases>()
                         .AddScoped<AddVenueHandler>()
                         .AddScoped<GetVenuesHandler>();
-                
+
                 services.AddScoped<ReservationUseCases>()
                         .AddScoped<GetReservationsHandler>()
                         .AddScoped<GetByReservationCodeHandler>()
@@ -42,9 +43,10 @@ namespace EventsManager.Application
                         .AddScoped<CancelReservationHandler>()
                         .AddScoped<ConfirmReservationHandler>();
 
-               services.AddScoped<EventUseCases>()
-                        .AddScoped<GetEventsHandler>()
-                        .AddScoped<AddEventHandler>();
+                services.AddScoped<EventUseCases>()
+                         .AddScoped<GetEventsHandler>()
+                         .AddScoped<AddEventHandler>()
+                         .AddScoped<GetOccupationReportHandler>();
 
             }
         }

@@ -3,10 +3,6 @@ using EventsManager.Application.Common.ResultPattern;
 using EventsManager.Application.Common.UseCases;
 using EventsManager.Core.Constants;
 using FluentValidation;
-using System;
-using System.Collections.Generic;
-using System.Reflection.Metadata.Ecma335;
-using System.Text;
 
 namespace EventsManager.Application.Features.Event.Add
 {
@@ -14,7 +10,7 @@ namespace EventsManager.Application.Features.Event.Add
     {
         private readonly IVenueRepository _venueRepository;
         private readonly IEventRepository _eventRepository;
-        public AddEventHandler(IValidator<AddEventRequest> validator, IEventRepository eventRepository,IVenueRepository venueRepository)
+        public AddEventHandler(IValidator<AddEventRequest> validator, IEventRepository eventRepository, IVenueRepository venueRepository)
             : base(validator)
         {
             _eventRepository = eventRepository;
@@ -22,9 +18,9 @@ namespace EventsManager.Application.Features.Event.Add
         }
         protected override async Task<Result<EventDTO>> OnExecute(AddEventRequest request)
         {
-           return await ValidateVenue(request)
-                .BindAsync(ValidateScheduleOverlap)
-                .BindAsync(AddEvent);
+            return await ValidateVenue(request)
+                 .BindAsync(ValidateScheduleOverlap)
+                 .BindAsync(AddEvent);
         }
         private async Task<Result<AddEventRequest>> ValidateVenue(AddEventRequest request)
         {
@@ -33,7 +29,7 @@ namespace EventsManager.Application.Features.Event.Add
                 return Result.Failure<AddEventRequest>(string.Format(SystemMessages.Validations.Error_NotFound, SystemValues.PropertyNames.Venue));
             if (request.MaxCapacity > tempVenue.Capacity)
                 return Result.Failure<AddEventRequest>(SystemMessages.Validations.Rule_EventCapacityLimit);
-            
+
             return request;
         }
         private async Task<Result<AddEventRequest>> ValidateScheduleOverlap(AddEventRequest request)
@@ -45,10 +41,10 @@ namespace EventsManager.Application.Features.Event.Add
                 endDate: request.EndDate,
                 excludeEventId: null);
 
-             if (hasOverlap)
-                 return Result.Failure<AddEventRequest>(SystemMessages.Validations.Rule_EventScheduleOverlap);
+            if (hasOverlap)
+                return Result.Failure<AddEventRequest>(SystemMessages.Validations.Rule_EventScheduleOverlap);
 
-             return request;
+            return request;
         }
         private async Task<Result<EventDTO>> AddEvent(AddEventRequest request)
         {

@@ -23,7 +23,6 @@ namespace EventsManager.Api.Controllers
         }
 
         [HttpPost]
-        [Authorize]
         public async Task<IActionResult> Create(AddVenueRequest request)
         {
             return await _venueUseCases.AddVenue.Execute(request)

@@ -1,8 +1,5 @@
 ﻿using EventsManager.Core.Constants;
 using FluentValidation;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EventsManager.Application.Features.Venue.Add
 {
@@ -12,7 +9,7 @@ namespace EventsManager.Application.Features.Venue.Add
         {
             RuleFor(x => x.Name)
             .NotEmpty().WithMessage(string.Format(SystemMessages.Validations.Error_Required, SystemValues.PropertyNames.Name))
-            .MaximumLength(32).WithMessage(string.Format(SystemMessages.Validations.Error_MaxLength, SystemValues.PropertyNames.Name,SystemValues.Tags.Validator_MaxLength));
+            .MaximumLength(32).WithMessage(string.Format(SystemMessages.Validations.Error_MaxLength, SystemValues.PropertyNames.Name, SystemValues.Tags.Validator_MaxLength));
 
             RuleFor(x => x.Capacity)
                 .GreaterThan(0).WithMessage(string.Format(SystemMessages.Validations.Error_GreaterThan, SystemValues.PropertyNames.Capacity, SystemValues.Tags.Validator_ComparisonValue));

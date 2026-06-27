@@ -6,9 +6,6 @@ using EventsManager.Application.Common.UseCases;
 using EventsManager.Core.Constants;
 using EventsManager.Core.Enums;
 using FluentValidation;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EventsManager.Application.Features.Reservation.Confirm
 {
@@ -56,13 +53,13 @@ namespace EventsManager.Application.Features.Reservation.Confirm
             if (!generatedFlag)
                 return Result.Failure<ConfirmReservationRequest>(SystemMessages.Validations.Rule_CouldNotGenerateReservationCode);
 
-            return ConfirmReservationRequest.From(request.ReservationId,tempCode);
+            return ConfirmReservationRequest.From(request.ReservationId, tempCode);
         }
         private async Task<Result<string>> ConfirmReservation(ConfirmReservationRequest request)
         {
             var tempReservation = await _reservationRepository.GetByIdAsync(request.ReservationId);
             if (tempReservation is null)
-                return Result.Failure<string>(string.Format(SystemMessages.Validations.Error_NotFound,SystemValues.PropertyNames.Reservation));
+                return Result.Failure<string>(string.Format(SystemMessages.Validations.Error_NotFound, SystemValues.PropertyNames.Reservation));
 
             if (tempReservation.Status == ReservationStatus.Cancelled)
                 return Result.Failure<string>(SystemMessages.Validations.Rule_ReservationAlreadyCancelled);
@@ -84,7 +81,7 @@ namespace EventsManager.Application.Features.Reservation.Confirm
                 <h1>¡Reserva confirmada!</h1>
                 <p>Hola {tempReservation.BuyerName},</p>
                 <p>Tu reserva para <strong>{tempEvent.Title}</strong> ha sido confirmada.</p>
-                <p>Usa el codigo para consultar la informacion o cancelar la reserva en nuestro sitio web.</p>
+                <p>Usa el código de reserva para consultar la información o cancelar la reserva en el sitio web.</p>
                 <p><strong>Código de reserva:</strong> {tempReservation.ReservationCode}</p>
                 <p><strong>Cantidad:</strong> {tempReservation.Quantity} entradas</p>
                 <p><strong>Fecha:</strong> {tempEvent.StartDate:dd/MM/yyyy HH:mm}</p>

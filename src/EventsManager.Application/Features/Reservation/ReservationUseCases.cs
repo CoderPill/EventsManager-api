@@ -3,15 +3,12 @@ using EventsManager.Application.Features.Reservation.Cancel;
 using EventsManager.Application.Features.Reservation.Confirm;
 using EventsManager.Application.Features.Reservation.Get;
 using EventsManager.Application.Features.Reservation.GetByReservationCode;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EventsManager.Application.Features.Reservation
 {
     public record ReservationUseCases(GetReservationsHandler GetReservations
-                                    ,AddReservationHandler AddReservation
-                                    ,ConfirmReservationHandler ConfirmReservation
+                                    , AddReservationHandler AddReservation
+                                    , ConfirmReservationHandler ConfirmReservation
                                     , GetByReservationCodeHandler GetByReservationCode
                                     , CancelReservationHandler CancelReservation);
 }

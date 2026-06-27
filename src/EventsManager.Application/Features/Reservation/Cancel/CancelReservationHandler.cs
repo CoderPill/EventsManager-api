@@ -5,9 +5,6 @@ using EventsManager.Application.Common.UseCases;
 using EventsManager.Core.Constants;
 using EventsManager.Core.Enums;
 using FluentValidation;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EventsManager.Application.Features.Reservation.Cancel
 {
@@ -15,17 +12,17 @@ namespace EventsManager.Application.Features.Reservation.Cancel
     {
         private readonly IReservationRepository _reservationRepository;
         private readonly IEventRepository _eventRepository;
-        public CancelReservationHandler(IValidator<CancelReservationRequest> validator, IReservationRepository reservationRepository,IEventRepository eventRepository)
-            :base(validator)
+        public CancelReservationHandler(IValidator<CancelReservationRequest> validator, IReservationRepository reservationRepository, IEventRepository eventRepository)
+            : base(validator)
         {
             _reservationRepository = reservationRepository;
             _eventRepository = eventRepository;
         }
         protected override async Task<Result<Unit>> OnExecute(CancelReservationRequest request)
         {
-            var reservation = await _reservationRepository.GetByCodeAsync(request.ReservationCode);
+            var reservation = await _reservationRepository.GetByCodeAsync(request.BuyerEmail, request.ReservationCode);
             if (reservation is null)
-                return Result.Failure(string.Format(SystemMessages.Validations.Error_NotFound,SystemValues.PropertyNames.Reservation));
+                return Result.Failure(string.Format(SystemMessages.Validations.Error_NotFound, SystemValues.PropertyNames.Reservation));
 
 
             if (reservation.Status == ReservationStatus.Cancelled)
@@ -50,7 +47,7 @@ namespace EventsManager.Application.Features.Reservation.Cancel
 
             _reservationRepository.Update(reservation);
             await _reservationRepository.SaveChangesAsync();
-            return  Result.Success();
+            return Result.Success();
         }
     }
 }

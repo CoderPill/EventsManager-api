@@ -3,6 +3,10 @@ using System.Text;
 
 namespace EventsManager.Infrastructure.Tools.Logging
 {
+    public interface IExceptionInfoExtractor
+    {
+        string ExtractExceptionInfo(Exception ex);
+    }
     public class ExceptionInfoExtractor : IExceptionInfoExtractor
     {
         public string ExtractExceptionInfo(Exception ex)

@@ -1,5 +1,8 @@
 ﻿using EventsManager.Application.Common.Interfaces.Persistence;
+using EventsManager.Application.Features.Event;
+using EventsManager.Core.Constants;
 using EventsManager.Core.Entities;
+using EventsManager.Core.Enums;
 using EventsManager.Infrastructure.Persistence.Common.Context;
 using EventsManager.Infrastructure.Persistence.Common.Repository;
 using Microsoft.EntityFrameworkCore;
@@ -20,14 +23,36 @@ namespace EventsManager.Infrastructure.Persistence.Features.Event
         {
             var query = BuildQuery(e => e.VenueId == venueId && e.IsActive);
 
-            // Excluir evento específico (útil para actualizaciones)
             if (excludeEventId.HasValue)
                 query = query.Where(e => e.Id != excludeEventId.Value);
 
-            // Lógica de superposición: A_start < B_end AND A_end > B_start
-            return await query.AnyAsync(e =>e.StartDate < endDate && e.EndDate > startDate);
+            return await query.AnyAsync(e => e.StartDate < endDate && e.EndDate > startDate);
         }
-
+        public async Task<EventOccupationReportDto?> GetOccupationReportAsync(int eventId)
+        {
+            return await BuildQuery(e => e.Id == eventId, true, SystemValues.QueryIncludes.Event_Reservations)
+                .Select(e => new EventOccupationReportDto(
+                    EventId: e.Id,
+                    Title: e.Title,
+                    Status: !e.IsActive ? EventStatus.Cancelled :
+                            e.EndDate < DateTime.UtcNow ? EventStatus.Completed : EventStatus.Active,
+                    TotalTicketsSold: e.Reservations
+                        .Where(r => r.Status == ReservationStatus.Confirmed)
+                        .Sum(r => r.Quantity),
+                    TotalTicketsAvailable: e.MaxCapacity -
+                        e.Reservations.Where(r => r.Status == ReservationStatus.Confirmed)
+                            .Sum(r => r.Quantity),
+                    OccupancyPercentage: e.MaxCapacity > 0 ?
+                        Math.Round((decimal)e.Reservations
+                            .Where(r => r.Status == ReservationStatus.Confirmed)
+                            .Sum(r => r.Quantity) / e.MaxCapacity * 100, 2) : 0m,
+                    TotalRevenue: e.Reservations
+                        .Where(r => r.Status == ReservationStatus.Confirmed)
+                        .Sum(r => r.Quantity) * e.Price,
+                    StartDate: e.StartDate,
+                    EndDate: e.EndDate))
+                .FirstOrDefaultAsync();
+        }
     }
 
 }

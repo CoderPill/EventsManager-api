@@ -3,9 +3,6 @@ using EventsManager.Application.Common.ResultPattern;
 using EventsManager.Application.Common.UseCases;
 using EventsManager.Core.Constants;
 using FluentValidation;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EventsManager.Application.Features.Reservation.Add
 {
@@ -13,7 +10,7 @@ namespace EventsManager.Application.Features.Reservation.Add
     {
         private readonly IReservationRepository _reservationRepository;
         private readonly IEventRepository _eventRepository;
-        public AddReservationHandler(IValidator<AddReservationRequest> validator, IEventRepository eventRepository,IReservationRepository reservationRepository)
+        public AddReservationHandler(IValidator<AddReservationRequest> validator, IEventRepository eventRepository, IReservationRepository reservationRepository)
             : base(validator)
         {
             _eventRepository = eventRepository;
@@ -28,13 +25,15 @@ namespace EventsManager.Application.Features.Reservation.Add
         {
             var eventEntity = await _eventRepository.GetByIdAsync(request.EventId);
             if (eventEntity is null || !eventEntity.IsActive)
-                return Result.Failure<AddReservationRequest>(string.Format(SystemMessages.Validations.Error_NotFound,SystemValues.PropertyNames.Event));
+                return Result.Failure<AddReservationRequest>(string.Format(SystemMessages.Validations.Error_NotFound, SystemValues.PropertyNames.Event));
 
 
             var now = DateTime.Now;
-            var oneHour = 3600; 
+            var oneHour = 3600;
             var secondsUntilStart = (eventEntity.StartDate - now).TotalSeconds;
-            if (secondsUntilStart < oneHour) 
+            if (secondsUntilStart < 0)
+                return Result.Failure<AddReservationRequest>(SystemMessages.Validations.Rule_ReservationTooLate);
+            if (secondsUntilStart < oneHour)
                 return Result.Failure<AddReservationRequest>(SystemMessages.Validations.Rule_ReservationTooCloseToStart);
 
 
@@ -44,7 +43,7 @@ namespace EventsManager.Application.Features.Reservation.Add
                 return Result.Failure<AddReservationRequest>(string.Format(SystemMessages.Validations.Rule_InsufficientCapacity, availableCapacity));
 
 
-            if (secondsUntilStart < (oneHour*24) && request.Quantity > 5)
+            if (secondsUntilStart < (oneHour * 24) && request.Quantity > 5)
                 return Result.Failure<AddReservationRequest>(SystemMessages.Validations.Rule_MaxQuantityForLastDay);
 
 

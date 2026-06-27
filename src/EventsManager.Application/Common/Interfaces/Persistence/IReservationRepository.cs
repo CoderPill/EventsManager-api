@@ -6,7 +6,7 @@ namespace EventsManager.Application.Common.Interfaces.Persistence
     {
         Task<int> GetCurrentOccupationByEventIdAsync(int eventId);
         Task<bool> ExistsByCodeAsync(string code);
-        Task<ReservationEntity?> GetByCodeAsync(string code);
-        Task<ReservationEntity?> GetByCodeIncludeEventAsync(string buyerEmail,string code);
+        Task<ReservationEntity?> GetByCodeAsync(string buyerEmail, string code);
+        Task<ReservationEntity?> GetByCodeIncludeEventAsync(string buyerEmail, string code);
     }
 }

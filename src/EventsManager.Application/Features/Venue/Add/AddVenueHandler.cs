@@ -2,9 +2,6 @@
 using EventsManager.Application.Common.ResultPattern;
 using EventsManager.Application.Common.UseCases;
 using FluentValidation;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EventsManager.Application.Features.Venue.Add
 {
@@ -12,7 +9,7 @@ namespace EventsManager.Application.Features.Venue.Add
     {
         private readonly IVenueRepository _venueRepository;
         public AddVenueHandler(IVenueRepository venueRepository, IValidator<AddVenueRequest> validator)
-            :base(validator)
+            : base(validator)
         {
             _venueRepository = venueRepository;
         }

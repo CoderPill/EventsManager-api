@@ -1,5 +1,9 @@
 ﻿namespace EventsManager.Infrastructure.Tools.Logging
 {
+    public interface IExceptionLogStorage
+    {
+        Task WriteAsync(string content);
+    }
     public class ExceptionLogStorage : IExceptionLogStorage
     {
         private readonly SemaphoreSlim _semaphore = new(1, 1);

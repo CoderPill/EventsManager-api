@@ -9,7 +9,7 @@ namespace EventsManager.Application.Features.User
         {
             public JwtGenerateRequest ToJwtGenerateRequest()
             {
-                return JwtGenerateRequest.From(instance.Id,instance.Username,instance.Role );
+                return JwtGenerateRequest.From(instance.Id, instance.Username, instance.Role);
             }
         }
     }

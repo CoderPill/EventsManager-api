@@ -1,4 +1,5 @@
-﻿using EventsManager.Core.Entities;
+﻿using EventsManager.Application.Features.Event;
+using EventsManager.Core.Entities;
 
 namespace EventsManager.Application.Common.Interfaces.Persistence
 {
@@ -9,5 +10,7 @@ namespace EventsManager.Application.Common.Interfaces.Persistence
         DateTime startDate,
         DateTime endDate,
         int? excludeEventId = null);
+
+        Task<EventOccupationReportDto?> GetOccupationReportAsync(int eventId);
     }
 }

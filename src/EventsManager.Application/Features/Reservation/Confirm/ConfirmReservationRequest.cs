@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace EventsManager.Application.Features.Reservation.Confirm
 {
@@ -17,7 +14,7 @@ namespace EventsManager.Application.Features.Reservation.Confirm
         }
         public static ConfirmReservationRequest From(int reservationId, string? confirmationCode)
         {
-            return new(reservationId,confirmationCode) ;
+            return new(reservationId, confirmationCode);
         }
     }
 }

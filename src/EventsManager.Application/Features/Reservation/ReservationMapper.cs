@@ -2,9 +2,6 @@
 using EventsManager.Application.Features.Reservation.Add;
 using EventsManager.Core.Entities;
 using EventsManager.Core.Enums;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EventsManager.Application.Features.Reservation
 {
@@ -14,7 +11,7 @@ namespace EventsManager.Application.Features.Reservation
         {
             public ReservationDTO ToDto()
             {
-                return ReservationDTO.From(instance.Id, instance.EventId,instance.BuyerName, instance.BuyerEmail, instance.Quantity, instance.Status, instance.ReservationCode, instance.CancelDate, instance.HasPenalty, instance.CreationDate);
+                return ReservationDTO.From(instance.Id, instance.EventId, instance.BuyerName, instance.BuyerEmail, instance.Quantity, instance.Status, instance.ReservationCode, instance.CancelDate, instance.HasPenalty, instance.CreationDate);
             }
             public ReservationDTO ToDtoIncludeEvent()
             {
@@ -28,10 +25,14 @@ namespace EventsManager.Application.Features.Reservation
                 return new()
                 {
                     EventId = instance.EventId
-                    ,Quantity = instance.Quantity
-                    ,BuyerName = instance.BuyerName
-                    ,BuyerEmail = instance.BuyerEmail
-                    ,Status = ReservationStatus.PendingPayment
+                    ,
+                    Quantity = instance.Quantity
+                    ,
+                    BuyerName = instance.BuyerName
+                    ,
+                    BuyerEmail = instance.BuyerEmail
+                    ,
+                    Status = ReservationStatus.PendingPayment
                 };
             }
         }

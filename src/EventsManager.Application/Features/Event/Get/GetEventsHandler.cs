@@ -3,9 +3,6 @@ using EventsManager.Application.Common.Interfaces.Persistence;
 using EventsManager.Application.Common.ResultPattern;
 using EventsManager.Application.Common.UseCases;
 using FluentValidation;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EventsManager.Application.Features.Event.Get
 {

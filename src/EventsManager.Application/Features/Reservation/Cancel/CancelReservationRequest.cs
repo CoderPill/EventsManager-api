@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using EventsManager.Application.Common.ReservationCode;
 
 namespace EventsManager.Application.Features.Reservation.Cancel
 {
-    public record CancelReservationRequest(string ReservationCode)
+    public record CancelReservationRequest(string BuyerEmail, string ReservationCode)
+        : ReservationCodeRequest(BuyerEmail, ReservationCode)
     {
-        public static CancelReservationRequest From(string reservationCode)
+        public static CancelReservationRequest From(string buyer, string reservationCode)
         {
-            return new(reservationCode);
+            return new(buyer, reservationCode);
         }
     }
 }

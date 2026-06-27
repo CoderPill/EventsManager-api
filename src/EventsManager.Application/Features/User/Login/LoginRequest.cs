@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace EventsManager.Application.Features.User.Login
+﻿namespace EventsManager.Application.Features.User.Login
 {
     public record LoginRequest(string Username, string Password)
     {

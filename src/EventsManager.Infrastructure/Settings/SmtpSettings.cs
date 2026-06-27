@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace EventsManager.Infrastructure.Settings
+﻿namespace EventsManager.Infrastructure.Settings
 {
     public class SmtpSettings
     {
+        public bool Enabled { get; set; }
         public string Host { get; set; } = string.Empty;
         public int Port { get; set; }
         public string SmtpUsername { get; set; } = string.Empty;

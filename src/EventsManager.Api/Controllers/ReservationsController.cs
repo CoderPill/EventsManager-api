@@ -1,6 +1,5 @@
 ﻿using EventsManager.Api.Extensions;
 using EventsManager.Application.Common.DTOs;
-using EventsManager.Application.Features.Event;
 using EventsManager.Application.Features.Reservation;
 using EventsManager.Application.Features.Reservation.Add;
 using EventsManager.Application.Features.Reservation.Cancel;
@@ -18,7 +17,19 @@ namespace EventsManager.Api.Controllers
         {
             _reservationUseCases = reservationUseCases;
         }
-        
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            return await _reservationUseCases.GetReservations.Execute(Unit.Value)
+                .ToActionResult();
+        }
+        [HttpGet("getByReservationCode")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetByReservationCode([FromQuery] GetByReservationCodeRequest request)
+        {
+            return await _reservationUseCases.GetByReservationCode.Execute(request)
+                .ToActionResult();
+        }
         [HttpPost]
         [AllowAnonymous]
         public async Task<IActionResult> Add(AddReservationRequest request)
@@ -34,19 +45,7 @@ namespace EventsManager.Api.Controllers
             return await _reservationUseCases.CancelReservation.Execute(request)
                 .ToActionResult(System.Net.HttpStatusCode.NoContent);
         }
-        [HttpGet("GetByReservationCode")]
-        [AllowAnonymous]
-        public async Task<IActionResult> GetByReservationCode([FromQuery] GetByReservationCodeRequest request)
-        {
-            return await _reservationUseCases.GetByReservationCode.Execute(request)
-                .ToActionResult();
-        }
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
-        {
-            return await _reservationUseCases.GetReservations.Execute(Unit.Value)
-                .ToActionResult();
-        }
+
         [HttpPut("confirm")]
         public async Task<IActionResult> Confirm(ConfirmReservationRequest request)
         {

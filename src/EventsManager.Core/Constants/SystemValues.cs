@@ -44,7 +44,7 @@ namespace EventsManager.Core.Constants
             public const string MaxCapacity = "Capacidad Maxima";
             public const string EventType = "Tipo de Evento";
         }
-        public static class  Tags
+        public static class Tags
         {
             public const string Validator_MaxLength = "{MaxLength}";
             public const string Validator_MinLength = "{MinLength}";
