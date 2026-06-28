@@ -15,7 +15,7 @@ namespace EventsManager.Infrastructure.Persistence.Features.Reservation
         }
         public async Task<int> GetCurrentOccupationByEventIdAsync(int eventId)
         {
-            var query = BuildQuery(e => e.EventId == eventId && e.Status == ReservationStatus.Confirmed || e.HasPenalty);
+            var query = BuildQuery(e => e.EventId == eventId && (e.Status == ReservationStatus.Confirmed || e.HasPenalty));
             return await query.SumAsync(r => r.Quantity);
         }
         public async Task<bool> ExistsByCodeAsync(string code)

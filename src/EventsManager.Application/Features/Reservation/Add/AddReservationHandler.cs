@@ -1,6 +1,7 @@
 ﻿using EventsManager.Application.Common.Interfaces.Persistence;
 using EventsManager.Application.Common.ResultPattern;
 using EventsManager.Application.Common.UseCases;
+using EventsManager.Core.Common.Time;
 using EventsManager.Core.Constants;
 using FluentValidation;
 
@@ -10,17 +11,22 @@ namespace EventsManager.Application.Features.Reservation.Add
     {
         private readonly IReservationRepository _reservationRepository;
         private readonly IEventRepository _eventRepository;
-        public AddReservationHandler(IValidator<AddReservationRequest> validator, IEventRepository eventRepository, IReservationRepository reservationRepository)
+        private readonly IDateTimeProvider _timeProvider;
+
+        public AddReservationHandler(IValidator<AddReservationRequest> validator, IEventRepository eventRepository, IReservationRepository reservationRepository, IDateTimeProvider timeProvider)
             : base(validator)
         {
             _eventRepository = eventRepository;
             _reservationRepository = reservationRepository;
+            _timeProvider = timeProvider;
         }
+
         protected override async Task<Result<ReservationDTO>> OnExecute(AddReservationRequest request)
         {
             return await ValidateReservationRules(request)
                         .BindAsync(AddReservation);
         }
+
         private async Task<Result<AddReservationRequest>> ValidateReservationRules(AddReservationRequest request)
         {
             var eventEntity = await _eventRepository.GetByIdAsync(request.EventId);
@@ -28,12 +34,11 @@ namespace EventsManager.Application.Features.Reservation.Add
                 return Result.Failure<AddReservationRequest>(string.Format(SystemMessages.Validations.Error_NotFound, SystemValues.PropertyNames.Event));
 
 
-            var now = DateTime.Now;
-            var oneHour = 3600;
+            var now = _timeProvider.GetNowColombia();
             var secondsUntilStart = (eventEntity.StartDate - now).TotalSeconds;
             if (secondsUntilStart < 0)
                 return Result.Failure<AddReservationRequest>(SystemMessages.Validations.Rule_ReservationTooLate);
-            if (secondsUntilStart < oneHour)
+            if (secondsUntilStart < SystemValues.ReservationRules.SecondsPerHour)
                 return Result.Failure<AddReservationRequest>(SystemMessages.Validations.Rule_ReservationTooCloseToStart);
 
 
@@ -43,16 +48,17 @@ namespace EventsManager.Application.Features.Reservation.Add
                 return Result.Failure<AddReservationRequest>(string.Format(SystemMessages.Validations.Rule_InsufficientCapacity, availableCapacity));
 
 
-            if (secondsUntilStart < (oneHour * 24) && request.Quantity > 5)
+            if (secondsUntilStart < (SystemValues.ReservationRules.SecondsPerHour * SystemValues.ReservationRules.HoursBeforeStartForLastDayRules) && request.Quantity > SystemValues.ReservationRules.MaxQuantityForLastDay)
                 return Result.Failure<AddReservationRequest>(SystemMessages.Validations.Rule_MaxQuantityForLastDay);
 
 
-            if (eventEntity.Price > 100 && request.Quantity > 10)
+            if (eventEntity.Price > SystemValues.ReservationRules.ExpensiveEventPriceThreshold && request.Quantity > SystemValues.ReservationRules.MaxQuantityForExpensiveEvent)
                 return Result.Failure<AddReservationRequest>(SystemMessages.Validations.Rule_MaxQuantityForExpensiveEvent);
 
 
             return request;
         }
+
         private async Task<Result<ReservationDTO>> AddReservation(AddReservationRequest request)
         {
             var tempEntity = request.ToEntity();

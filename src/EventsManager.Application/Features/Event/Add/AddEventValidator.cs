@@ -1,12 +1,17 @@
-﻿using EventsManager.Core.Constants;
+﻿using EventsManager.Core.Common.Time;
+using EventsManager.Core.Constants;
 using FluentValidation;
 
 namespace EventsManager.Application.Features.Event.Add
 {
     public class AddEventValidator : AbstractValidator<AddEventRequest>
     {
-        public AddEventValidator()
+        private readonly IDateTimeProvider _timeProvider;
+
+        public AddEventValidator(IDateTimeProvider timeProvider)
         {
+            _timeProvider = timeProvider;
+
             RuleFor(x => x.Title)
                 .NotEmpty().WithMessage(string.Format(SystemMessages.Validations.Error_Required, SystemValues.PropertyNames.Name))
                 .MinimumLength(5).WithMessage(string.Format(SystemMessages.Validations.Error_MinLength, SystemValues.PropertyNames.Title, SystemValues.Tags.Validator_MinLength))
@@ -25,7 +30,7 @@ namespace EventsManager.Application.Features.Event.Add
 
             RuleFor(x => x.StartDate)
                 .NotEmpty().WithMessage(string.Format(SystemMessages.Validations.Error_Required, SystemValues.PropertyNames.StartDate))
-                .GreaterThan(DateTime.Now).WithMessage(string.Format(SystemMessages.Validations.Error_GreaterThanOrEqual, SystemValues.PropertyNames.StartDate, SystemValues.PropertyNames.DateNow))
+                .GreaterThan(_timeProvider.GetNowColombia()).WithMessage(string.Format(SystemMessages.Validations.Error_GreaterThanOrEqual, SystemValues.PropertyNames.StartDate, SystemValues.PropertyNames.DateNow))
                 .Must(BeValidWeekendStartTime).WithMessage(string.Format(SystemMessages.Validations.Rule_EventWeekendStartTimeLimit));
 
             RuleFor(x => x.EndDate)

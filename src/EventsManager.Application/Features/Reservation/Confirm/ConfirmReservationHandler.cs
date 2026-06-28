@@ -3,6 +3,7 @@ using EventsManager.Application.Common.Interfaces.Persistence;
 using EventsManager.Application.Common.Interfaces.Tools;
 using EventsManager.Application.Common.ResultPattern;
 using EventsManager.Application.Common.UseCases;
+using EventsManager.Core.Common.Time;
 using EventsManager.Core.Constants;
 using EventsManager.Core.Enums;
 using FluentValidation;
@@ -15,17 +16,21 @@ namespace EventsManager.Application.Features.Reservation.Confirm
         private readonly IEventRepository _eventRepository;
         private readonly IAlphaNumericCodeGenerator _codeGenerator;
         private readonly IEmailService _emailService;
+        private readonly IDateTimeProvider _timeProvider;
+
         public ConfirmReservationHandler(IValidator<ConfirmReservationRequest> validator
-                                       , IReservationRepository reservationRepository
-                                       , IEventRepository eventRepository
-                                       , IAlphaNumericCodeGenerator codeGenerator
-                                       , IEmailService emailService)
+                                        , IReservationRepository reservationRepository
+                                        , IEventRepository eventRepository
+                                        , IAlphaNumericCodeGenerator codeGenerator
+                                        , IEmailService emailService
+                                        , IDateTimeProvider timeProvider)
             : base(validator)
         {
             _reservationRepository = reservationRepository;
             _eventRepository = eventRepository;
             _codeGenerator = codeGenerator;
             _emailService = emailService;
+            _timeProvider = timeProvider;
         }
 
         protected override async Task<Result<string>> OnExecute(ConfirmReservationRequest request)
@@ -33,6 +38,7 @@ namespace EventsManager.Application.Features.Reservation.Confirm
             return await GenerateConfirmationCode(request)
                         .BindAsync(ConfirmReservation);
         }
+
         private async Task<Result<ConfirmReservationRequest>> GenerateConfirmationCode(ConfirmReservationRequest request)
         {
             int limitTry = 5;
@@ -55,6 +61,7 @@ namespace EventsManager.Application.Features.Reservation.Confirm
 
             return ConfirmReservationRequest.From(request.ReservationId, tempCode);
         }
+
         private async Task<Result<string>> ConfirmReservation(ConfirmReservationRequest request)
         {
             var tempReservation = await _reservationRepository.GetByIdAsync(request.ReservationId);
@@ -66,6 +73,8 @@ namespace EventsManager.Application.Features.Reservation.Confirm
 
             if (tempReservation.Status == ReservationStatus.Confirmed)
                 return Result.Failure<string>(SystemMessages.Validations.Rule_ReservationAlreadyConfirmed);
+
+            var now = _timeProvider.GetNowColombia();
 
             tempReservation.Status = Core.Enums.ReservationStatus.Confirmed;
             tempReservation.ReservationCode = request.ConfirmationCode;
@@ -85,6 +94,7 @@ namespace EventsManager.Application.Features.Reservation.Confirm
                 <p><strong>Código de reserva:</strong> {tempReservation.ReservationCode}</p>
                 <p><strong>Cantidad:</strong> {tempReservation.Quantity} entradas</p>
                 <p><strong>Fecha:</strong> {tempEvent.StartDate:dd/MM/yyyy HH:mm}</p>
+                <p><strong>Confirmado:</strong> {now:dd/MM/yyyy HH:mm}</p>
             ");
 
             await _emailService.SendAsync(emailMessage);

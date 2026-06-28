@@ -53,5 +53,14 @@ namespace EventsManager.Core.Constants
             public const string Validator_PropertyValue = "{PropertyValue}";
             public const string Validator_PropertyName = "{PropertyName}";
         }
+        public static class ReservationRules
+        {
+            public const int SecondsPerHour = 3600;
+            public const int HoursBeforeStartForLastDayRules = 24;
+            public const int MaxQuantityForLastDay = 5;
+            public const decimal ExpensiveEventPriceThreshold = 100m;
+            public const int MaxQuantityForExpensiveEvent = 10;
+            public const int HoursBeforeStartForCancellationPenalty = 48;
+        }
     }
 }

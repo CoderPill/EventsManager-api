@@ -2,6 +2,7 @@
 using EventsManager.Application.Common.Interfaces.Persistence;
 using EventsManager.Application.Common.ResultPattern;
 using EventsManager.Application.Common.UseCases;
+using EventsManager.Core.Common.Time;
 using EventsManager.Core.Constants;
 using EventsManager.Core.Enums;
 using FluentValidation;
@@ -12,12 +13,16 @@ namespace EventsManager.Application.Features.Reservation.Cancel
     {
         private readonly IReservationRepository _reservationRepository;
         private readonly IEventRepository _eventRepository;
-        public CancelReservationHandler(IValidator<CancelReservationRequest> validator, IReservationRepository reservationRepository, IEventRepository eventRepository)
+        private readonly IDateTimeProvider _timeProvider;
+
+        public CancelReservationHandler(IValidator<CancelReservationRequest> validator, IReservationRepository reservationRepository, IEventRepository eventRepository, IDateTimeProvider timeProvider)
             : base(validator)
         {
             _reservationRepository = reservationRepository;
             _eventRepository = eventRepository;
+            _timeProvider = timeProvider;
         }
+
         protected override async Task<Result<Unit>> OnExecute(CancelReservationRequest request)
         {
             var reservation = await _reservationRepository.GetByCodeAsync(request.BuyerEmail, request.ReservationCode);
@@ -37,13 +42,12 @@ namespace EventsManager.Application.Features.Reservation.Cancel
             if (eventEntity is null)
                 return Result.Failure(string.Format(SystemMessages.Validations.Error_NotFound, SystemValues.PropertyNames.Event));
 
-            var now = DateTime.Now;
-            var TowDays = 172800;
+            var now = _timeProvider.GetNowColombia();
             var secondsUntilStart = (eventEntity.StartDate - now).TotalSeconds;
 
             reservation.Status = ReservationStatus.Cancelled;
             reservation.CancelDate = now;
-            reservation.HasPenalty = secondsUntilStart < TowDays;
+            reservation.HasPenalty = secondsUntilStart < (SystemValues.ReservationRules.SecondsPerHour * SystemValues.ReservationRules.HoursBeforeStartForCancellationPenalty);
 
             _reservationRepository.Update(reservation);
             await _reservationRepository.SaveChangesAsync();
