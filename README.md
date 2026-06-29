@@ -23,6 +23,7 @@ setx EVENTSMANAGER_JwtSettings__SecretKey "aB3zxY9!mK2#pL5@vR8nW1cZ4gA7dH0jF6sT9
 setx EVENTSMANAGER_SmtpSettings__SmtpUsername "usuario smtp" /m
 setx EVENTSMANAGER_SmtpSettings__SmtpPassword "contraseña smtp" /m
 setx EVENTSMANAGER_SmtpSettings__FromEmail "El correo de origen" /m
+setx EVENTSMANAGER_SmtpSettings__FromName "EventsManager" /m
 ```
 > Reiniciar terminal/IDE tras ejecutar para que las variables queden disponibles.
 
@@ -35,6 +36,7 @@ setx EVENTSMANAGER_SmtpSettings__FromEmail "El correo de origen" /m
 | `EVENTSMANAGER_SmtpSettings__SmtpUsername` | `SmtpSettings` | Usuario SMTP |
 | `EVENTSMANAGER_SmtpSettings__SmtpPassword` | `SmtpSettings` | Contraseña SMTP (si usa Gmail/Outlook personal: **App Password**, no contraseña de cuenta) |
 | `EVENTSMANAGER_SmtpSettings__FromEmail` | `SmtpSettings` | Email remitente |
+| `EVENTSMANAGER_SmtpSettings__FromName` | `SmtpSettings` | Nombre remitente visible (opcional, se usa FromName del JSON si no se define) |
 
 ### 1.3 Configuración no sensible (appsettings.json)
 Settings no secretos se definen en `appsettings.json` / `appsettings.Development.json`. La precedencia es: **Environment Variables > appsettings.json > defaults**.
@@ -47,18 +49,20 @@ Settings no secretos se definen en `appsettings.json` / `appsettings.Development
   "SmtpSettings": {
     "Enabled": false,
     "Host": "smtp.example.com",
-    "Port": 587
+    "Port": 587,
+    "EnableSsl": true,
+    "FromName": "EventsManager"
   },
-  "CORS": {
-    "AllowedOrigins": ["http://localhost:3000"]
-  }
+  "AllowedOriginCORS": [
+    "http://localhost:4200"
+  ]
 }
 ```
 
 | Clase | Propiedades | Origen típico |
 |-------|-------------|---------------|
 | `JwtSettings` | `SecretKey`, `ExpirationInHours` | Env var (SecretKey) + JSON (ExpirationInHours) |
-| `SmtpSettings` | `Enabled`, `Host`, `Port`, `SmtpUsername`, `SmtpPassword`, `FromEmail` | Env vars (credenciales) + JSON (Host/Port/Enabled) |
+| `SmtpSettings` | `Enabled`, `Host`, `Port`, `EnableSsl`, `SmtpUsername`, `SmtpPassword`, `FromEmail`, `FromName` | Env vars (credenciales) + JSON (Host/Port/Enabled/EnableSsl/FromName) |
 | `AdminSeedSettings` | `Username`, `Password` | Env vars obligatorias |
 | `ConnectionStringsSettings` | `DefaultConnection` | Env var obligatoria |
 
