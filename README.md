@@ -33,7 +33,7 @@ setx EVENTSMANAGER_SmtpSettings__FromEmail "El correo de origen" /m
 | `EVENTSMANAGER_AdminSeedSettings__Password` | `AdminSeedSettings` | Contraseña administrador inicial |
 | `EVENTSMANAGER_JwtSettings__SecretKey` | `JwtSettings` | Clave secreta HMAC-SHA256 (≥256 bits) |
 | `EVENTSMANAGER_SmtpSettings__SmtpUsername` | `SmtpSettings` | Usuario SMTP |
-| `EVENTSMANAGER_SmtpSettings__SmtpPassword` | `SmtpSettings` | Contraseña SMTP |
+| `EVENTSMANAGER_SmtpSettings__SmtpPassword` | `SmtpSettings` | Contraseña SMTP (si usa Gmail/Outlook personal: **App Password**, no contraseña de cuenta) |
 | `EVENTSMANAGER_SmtpSettings__FromEmail` | `SmtpSettings` | Email remitente |
 
 ### 1.3 Configuración no sensible (appsettings.json)
@@ -121,12 +121,14 @@ Result<T> ──▶ Controller ──▶ ResultActionExtensions.ToActionResult()
 | **Puertos/Adaptadores (Interfaces en Application)** | Inversión de dependencias real, tests con mocks, swap de proveedores (SMTP→NullEmailService) | Indirección extra, más interfaces que mantener | Servicios concretos inyectados directamente, MediatR pipeline behaviors |
 | **JWT Revocación en MemoryCache** | Simplicidad operativa, cero dependencias externas, expiración automática por TTL | No persiste reinicios, no escala multi-instancia sin Redis distribuido | Redis (distributed cache), tabla DB `RevokedTokens`, short-lived access + refresh tokens |
 | **Vertical Slices (Handler+Request+Validator+DTOs por feature)** | Cohesión alta, acoplamiento bajo, navegación trivial, sin "god services" | Duplicación de patrones (validator, mapper) por feature, menos reuso transversal | MediatR + CQRS clásico, Application Services monolíticos |
+| **Nota sobre CQRS** | El sistema **no implementa CQRS explícito** (no hay `ICommand`/`IQuery` separados, ni `CommandHandler`/`QueryHandler` distintos). `BaseUseCase<TRequest,TResponse>` sirve tanto para comandos (escritura) como consultas (lectura). La separación es por feature (Vertical Slices), no por tipo de operación. CQRS clásico fue evaluado como alternativa. | — | — |
 | **FluentValidation vs DataAnnotations** | Reglas complejas expresivas, testables aisladamente, separadas del modelo | Dependencia extra, aprendizaje inicial | DataAnnotations + IValidatableObject, manual validation |
 | **TimeZone hardcoded (Colombia) en SystemDateTimeProvider** | Correcto para dominio actual, sin config extra | No portable a otros países/zonas sin cambio de código | `IDateTimeProvider` configurable por tenant/setting, UTC everywhere + conversión en presentation |
 | **BaseRepository<T> genérico + BuildQuery** | DRY en CRUD, includes/predicate/no-tracking parametrizables | Fuga de abstracción EF Core (`IQueryable`, `Expression`), acopla a EF Core | Repository estricto (solo métodos de dominio), Specification pattern, Dapper |
 | **Seed automático al arranque (`ApplyMigrationsAndSeedAsync`)** | Entorno consistente en dev/CI, cero pasos manuales | Arranque más lento, riesgo en prod si migraciones fallan | Migraciones CLI separadas, seed opcional via flag, herramientas externas (DbUp, Flyway) |
 | **GlobalExceptionMiddleware** | Manejo centralizado de errores, logging consistente, respuesta uniforme `Result<T>`, evita try/catch dispersos | Oculta stack trace real en producción (solo mensaje genérico), acopla formato de error a `Result<T>` | Filtros de excepción por controller, `UseExceptionHandler` genérico, ProblemDetails (RFC 7807) |
 | **Separación secretos en variables de entorno** | Credenciales fuera del repo, cumplimiento 12-factor, distinción clara secretos vs config | Requiere setup manual en cada máquina/CI, dependencia de shell/OS, riesgo de typos en nombres(la estructura de la variable esta ligada a la estructura de la clase settings correspondiente) | `appsettings.json` con user-secrets (dev), Azure Key Vault / AWS Secrets Manager (prod), Docker secrets |
+| **Logging de errores en archivos .txt** | Simplicidad operativa, cero dependencias externas, rotación diaria automática, thread-safe con `SemaphoreSlim` | Hardcoded: ruta `ExceptionLogs/`, nombre `Errors-yyyy-MM-dd.txt`, formato plano; no estructurado (no JSON), no índices, no búsqueda, no escalable multi-instancia | Serilog/NLog + sinks (file, seq, elasticsearch), structured logging (JSON), OpenTelemetry, Loki/Grafana |
 
 ---
 
@@ -141,7 +143,7 @@ Result<T> ──▶ Controller ──▶ ResultActionExtensions.ToActionResult()
 | **Auth** | JWT Bearer | HMAC-SHA256, claims: `jti`, `nameid`, `name`, `role` |
 | **Revocación** | `IMemoryCache` | In-memory, expiración absoluta por token |
 | **Hashing** | BCrypt | `IPasswordHasher` via `PasswordHasher` |
-| **Email** | SMTP / NullObject | `IEmailService` + `NullEmailService` si `Enabled=false` |
+| **Email** | SMTP / NullObject | `IEmailService` + `NullEmailService` si `Enabled=false`. **Nota**: con Gmail/Outlook personal usar **App Password** (no contraseña de cuenta), habilitar 2FA y generar en seguridad de la cuenta. |
 | **Generación códigos** | Alfanumérico custom | `IAlphaNumericCodeGenerator` → `AlphaNumericCodeGenerator` (formato `EV-XXXXXX`) |
 | **Serialización** | `System.Text.Json` | camelCase, enums as string (`JsonStringEnumConverter`), case-insensitive |
 | **Docs** | Swashbuckle (Swagger) | Bearer auth scheme, XML comments (`GenerateDocumentationFile=true`) |
@@ -187,7 +189,9 @@ Result<T> ──▶ Controller ──▶ ResultActionExtensions.ToActionResult()
 
 ## 5. Organización por Vertical Slices
 
-Cada feature agrupa en su carpeta:
+Cada feature agrupa su lógica en **Application** e **Infrastructure**:
+
+**Application** (`Features/{FeatureName}/{Operation}/`):
 ```
 Features/{FeatureName}/{Operation}/
 ├── {Operation}Handler.cs      # Hereda BaseUseCase<TRequest,TResponse>
@@ -197,12 +201,30 @@ Features/{FeatureName}/{Operation}/
 └── DTOs / Mappers / UseCases  # Según necesidad
 ```
 
+**Infrastructure** (`Persistence/Features/{FeatureName}/` + `Tools/`):
+```
+Persistence/Features/{FeatureName}/
+├── {FeatureName}Repository.cs      # Implementa I{FeatureName}Repository
+├── {FeatureName}Configuration.cs   # EF Core IEntityTypeConfiguration
+└── {FeatureName}Seeder.cs          # Datos iniciales (si aplica)
+
+Tools/
+├── Email/EmailService.cs           # IEmailService (SMTP)
+├── Email/NullEmailService.cs       # NullObject para dev
+├── Logging/ExceptionInfoExtractor.cs
+└── Logging/ExceptionLogStorage.cs
+```
+
 Ejemplos:
 - `Features/Event/Add/` → `AddEventHandler`, `AddEventRequest`, `AddEventValidator`
+- `Persistence/Features/Event/` → `EventRepository`, `EventConfiguration`, `EventSeeder`
 - `Features/Reservation/Cancel/` → `CancelReservationHandler`, `CancelReservationRequest`, `CancelReservationValidator`
+- `Persistence/Features/Reservation/` → `ReservationRepository`, `ReservationConfiguration`
 - `Features/User/Login/` → `LoginHandler`, `LoginRequest`, `LoginRequestValidator`
+- `Persistence/Features/User/` → `UserRepository`, `UserConfiguration`, `UserSeeder`
 
 Registro DI en `ApplicationDependencyInjections.cs`: `AddScoped<Handler>()` + `AddValidatorsFromAssembly()`.
+Registro DI en `InfrastructureDependencyInjections.cs`: repositorios, `IEmailService`, `IJwtService`, `IPasswordHasher`, `IAlphaNumericCodeGenerator`, `IDateTimeProvider`, seeders.
 
 ---
 
@@ -215,9 +237,10 @@ Registro DI en `ApplicationDependencyInjections.cs`: `AddScoped<Handler>()` + `A
 | **FluentValidation por feature** | Un `AbstractValidator<TRequest>` por Request, validaciones sincrónicas/asíncronas, mensajes desde `SystemMessages.Validations`. | `Features/*/Validator.cs` |
 | **JWT + Revocación** | Claims: `jti` (Guid), `nameid` (UserId), `name` (Username), `role`. `Generate()` → token. `Revoke(jti, exp)` → `MemoryCache.Set(jti, true, AbsoluteExpiration=exp)`. `IsRevoked(jti)` → `MemoryCache.TryGetValue`. | `Infrastructure/Tools/JwtService.cs` |
 | **DateTimeProvider** | `IDateTimeProvider` (Core) → `SystemDateTimeProvider` (Infrastructure). `GetNowColombia()` usa `TimeZoneInfo` Colombia. Inyectado en handlers para testabilidad. | `Core/Common/Time/IDateTimeProvider.cs` |
-| **GlobalExceptionMiddleware** | Catch all → mapea exception a HTTP status → `Result.Failure(mensaje)` → log archivo diario `ExceptionLogs/Errors-yyyy-MM-dd.txt` (SemaphoreSlim). | `Api/Middlewares/GlobalExceptionMiddleware.cs` |
+| **GlobalExceptionMiddleware** | Catch all → mapea exception a HTTP status → `Result.Failure(mensaje)` → log archivo diario `ExceptionLogs/Errors-yyyy-MM-dd.txt` (SemaphoreSlim). **Hardcoded**: ruta `ExceptionLogs/`, nombre `Errors-yyyy-MM-dd.txt`, extracción via `IExceptionInfoExtractor` (mensaje, stack trace, inner exceptions). | `Api/Middlewares/GlobalExceptionMiddleware.cs` |
 | **BaseRepository<T>** | CRUD genérico + `BuildQuery(predicate, includes, noTracking)`. `AsNoTrackingWithIdentityResolution()` por defecto. | `Infrastructure/Persistence/Common/Repository/BaseRepository.cs` |
 | **Seeders** | `MainSeeder` → `UserSeeder` (admin), `VenueSeeder` (venues por defecto). Ejecutado en `ApiBuilderExtensions.ApplyMigrationsAndSeedAsync()`. | `Infrastructure/Persistence/Common/DataSeed/` |
+| **Generación códigos alfanuméricos (Base62)** | `IAlphaNumericCodeGenerator` → `AlphaNumericCodeGenerator`. Alfabeto `0-9A-Za-z` (62 chars), `RandomNumberGenerator.GetInt32` criptográfico. Formato `EV-` + 6 chars = ~56.8 bits entropía. Usado en `ConfirmReservationHandler` con reintento (máx 5) por colisión. | `Infrastructure/Tools/AlphaNumericCodeGenerator.cs` |
 
 ---
 
@@ -311,7 +334,11 @@ Registro DI en `ApplicationDependencyInjections.cs`: `AddScoped<Handler>()` + `A
   | `KeyNotFoundException` | 404 | `Error_NotFound` |
   | `InvalidOperationException` | 409 | `Error_Conflict` |
   | Otros | 500 | `Error_Internal` |
-- Log: `ExceptionLogs/Errors-yyyy-MM-dd.txt` (thread-safe con `SemaphoreSlim`)
+- **Extracción y almacenamiento** (`Infrastructure/Tools/Logging/`):
+  - `IExceptionInfoExtractor.ExtractExceptionInfo(ex)` → string con mensaje, stack trace, inner exceptions recursivas
+  - `IExceptionLogStorage.WriteAsync(content)` → escribe en `ExceptionLogs/Errors-yyyy-MM-dd.txt`
+  - **Hardcoded**: directorio `ExceptionLogs/` (relativo a `Directory.GetCurrentDirectory()`), nombre `Errors-yyyy-MM-dd.txt`, formato texto plano, `SemaphoreSlim` para concurrencia
+  - No rotación por tamaño, no compresión, no structured logging (JSON)
 - Respuesta: `Result.Failure(mensaje)` serializado JSON (`application/json`)
 
 **Validación FluentValidation** → 400 con `Result.Failure(errors[])` via `ApiBehaviorOptions.InvalidModelStateResponseFactory`.
