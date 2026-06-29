@@ -58,3 +58,4 @@ nunit-*.xml
 /.vs
 /.github
 /.atl
+/fix_xml.ps1

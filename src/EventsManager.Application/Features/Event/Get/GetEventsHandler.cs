@@ -2,6 +2,7 @@
 using EventsManager.Application.Common.Interfaces.Persistence;
 using EventsManager.Application.Common.ResultPattern;
 using EventsManager.Application.Common.UseCases;
+using EventsManager.Core.Constants;
 using FluentValidation;
 
 namespace EventsManager.Application.Features.Event.Get
@@ -18,8 +19,8 @@ namespace EventsManager.Application.Features.Event.Get
 
         protected override async Task<Result<List<EventDTO>>> OnExecute(Unit request)
         {
-            var tempEntities = await _eventRepository.GetAllAsync();
-            return tempEntities.Select(e => e.ToDto()).ToList();
+            var tempEntities = await _eventRepository.GetAllAsync(null, true, SystemValues.QueryIncludes.Event_Venue);
+            return tempEntities.Select(e => e.ToDtoIncludeVenue()).ToList();
         }
     }
 }

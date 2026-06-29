@@ -2,8 +2,8 @@
 {
     public enum EventType
     {
-        Conference = 1,
-        Workshop = 2,
-        Concert = 3
+        Conferencia = 1,
+        Taller = 2,
+        Concierto = 3
     }
 }

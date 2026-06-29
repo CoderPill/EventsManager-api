@@ -2,8 +2,8 @@
 {
     public enum EventStatus
     {
-        Active = 1,
-        Cancelled = 2,
-        Completed = 3
+        Activo = 1,
+        Cancelado = 2,
+        Completado = 3
     }
 }

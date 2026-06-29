@@ -13,12 +13,12 @@ namespace EventsManager.Application.Features.Event
             private EventStatus CalculateStatus()
             {
                 if (!instance.IsActive)
-                    return EventStatus.Cancelled;
+                    return EventStatus.Cancelado;
 
                 if (instance.EndDate < DateTime.UtcNow)
-                    return EventStatus.Completed;
+                    return EventStatus.Completado;
 
-                return EventStatus.Active;
+                return EventStatus.Activo;
             }
             public EventDTO ToDto()
             {

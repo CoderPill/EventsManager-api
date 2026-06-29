@@ -30,11 +30,11 @@ namespace EventsManager.Application.Features.Reservation.Cancel
                 return Result.Failure(string.Format(SystemMessages.Validations.Error_NotFound, SystemValues.PropertyNames.Reservation));
 
 
-            if (reservation.Status == ReservationStatus.Cancelled)
+            if (reservation.Status == ReservationStatus.Cancelada)
                 return Result.Failure(SystemMessages.Validations.Rule_ReservationAlreadyCancelled);
 
 
-            if (reservation.Status != ReservationStatus.Confirmed)
+            if (reservation.Status != ReservationStatus.Confirmada)
                 return Result.Failure(SystemMessages.Validations.Rule_ReservationNotConfirmed);
 
 
@@ -45,7 +45,7 @@ namespace EventsManager.Application.Features.Reservation.Cancel
             var now = _timeProvider.GetNowColombia();
             var secondsUntilStart = (eventEntity.StartDate - now).TotalSeconds;
 
-            reservation.Status = ReservationStatus.Cancelled;
+            reservation.Status = ReservationStatus.Cancelada;
             reservation.CancelDate = now;
             reservation.HasPenalty = secondsUntilStart < (SystemValues.ReservationRules.SecondsPerHour * SystemValues.ReservationRules.HoursBeforeStartForCancellationPenalty);
 

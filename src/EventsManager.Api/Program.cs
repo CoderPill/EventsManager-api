@@ -2,9 +2,11 @@
 using EventsManager.Api.Extensions;
 using EventsManager.Api.Middlewares;
 using EventsManager.Application;
+using EventsManager.Application.Common.ResultPattern;
 using EventsManager.Core.Constants;
 using EventsManager.Infrastructure;
 using EventsManager.Infrastructure.Settings;
+using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -32,7 +34,27 @@ namespace EventsManager.Api
                 options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
                 options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            }).Services.Configure<ApiBehaviorOptions>(options =>
+            {
+                options.InvalidModelStateResponseFactory = context =>
+                {
+                    var errors = context.ModelState
+                        .SelectMany(entry =>
+                        {
+                            var property = entry.Key.Replace("$.", "");
+                            return entry.Value!.Errors
+                                  .Where(error => error.Exception is JsonException
+                                                   || error.ErrorMessage.Contains(SystemValues.Tags.Validator_CouldNoBeConverted, StringComparison.OrdinalIgnoreCase))
+                                 .Select(_ => string.Format(SystemMessages.Validations.Error_InvalidFormat, property));
+                        })
+                        .Distinct()
+                        .ToArray();
+
+                    return new BadRequestObjectResult(Result.Failure(errors));
+                };
             });
+
+
             builder.Services.CORSConfiguration(allowedOrigins);
             builder.Services.CustomAuthentication(jwtSettings);
             builder.Services.SwaggerConfiguration();

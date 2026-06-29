@@ -32,7 +32,7 @@ namespace EventsManager.Application.Features.Reservation
                     ,
                     BuyerEmail = instance.BuyerEmail
                     ,
-                    Status = ReservationStatus.PendingPayment
+                    Status = ReservationStatus.PendientePago
                 };
             }
         }

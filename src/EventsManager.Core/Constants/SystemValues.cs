@@ -52,6 +52,7 @@ namespace EventsManager.Core.Constants
             public const string Validator_TotalLength = "{TotalLength}";
             public const string Validator_PropertyValue = "{PropertyValue}";
             public const string Validator_PropertyName = "{PropertyName}";
+            public const string Validator_CouldNoBeConverted = "could not be converted";
         }
         public static class ReservationRules
         {

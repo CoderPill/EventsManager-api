@@ -1,4 +1,5 @@
-﻿using EventsManager.Core.Constants;
+﻿using EventsManager.Application.Common.ResultPattern;
+using EventsManager.Core.Constants;
 using EventsManager.Infrastructure.Tools.Logging;
 
 namespace EventsManager.Api.Middlewares
@@ -50,19 +51,14 @@ namespace EventsManager.Api.Middlewares
             context.Response.ContentType = SystemValues.Infrastructure.JsonContentType;
             context.Response.StatusCode = statusCode;
 
-            var response = new
-            {
-                status = statusCode,
-                Error = GetGenericMessage(statusCode)
-            };
-
+            var response = Result.Failure(GetGenericMessage(statusCode));
             await context.Response.WriteAsJsonAsync(response);
         }
 
         private static string GetGenericMessage(int statusCode) => statusCode switch
         {
             StatusCodes.Status400BadRequest => SystemMessages.Infrastructure.Error_BadRequest,
-            StatusCodes.Status401Unauthorized => SystemMessages.Infrastructure.Error_Unauthorized,
+            StatusCodes.Status401Unauthorized => SystemMessages.User.Error_Unauthorized,
             StatusCodes.Status404NotFound => SystemMessages.Infrastructure.Error_NotFound,
             StatusCodes.Status409Conflict => SystemMessages.Infrastructure.Error_Conflict,
             _ => SystemMessages.Infrastructure.Error_Internal

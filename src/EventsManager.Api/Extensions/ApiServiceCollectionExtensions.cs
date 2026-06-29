@@ -1,4 +1,5 @@
 ﻿using EventsManager.Application.Common.Interfaces.Tools;
+using EventsManager.Application.Common.ResultPattern;
 using EventsManager.Core.Constants;
 using EventsManager.Infrastructure.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -49,6 +50,27 @@ namespace EventsManager.Api.Extensions
                                  context.Fail(SystemMessages.User.Error_RevokedToken);
 
                              return Task.CompletedTask;
+                         },
+                         OnChallenge = async context =>
+                         {
+                             context.HandleResponse();
+
+                             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                             context.Response.ContentType = SystemValues.Infrastructure.JsonContentType;
+
+                             var result = Result.Failure(context.ErrorDescription ?? SystemMessages.User.Error_Unauthorized);
+
+                             await context.Response.WriteAsJsonAsync(result);
+                         },
+
+                         OnAuthenticationFailed = async context =>
+                         {
+                             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                             context.Response.ContentType = SystemValues.Infrastructure.JsonContentType;
+
+                             var result = Result.Failure(SystemMessages.User.Error_InvalidToken);
+
+                             await context.Response.WriteAsJsonAsync(result);
                          }
                      };
                  });

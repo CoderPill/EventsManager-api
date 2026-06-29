@@ -34,20 +34,20 @@ namespace EventsManager.Infrastructure.Persistence.Features.Event
                 .Select(e => new EventOccupationReportDto(
                     EventId: e.Id,
                     Title: e.Title,
-                    Status: !e.IsActive ? EventStatus.Cancelled :
-                            e.EndDate < DateTime.UtcNow ? EventStatus.Completed : EventStatus.Active,
+                    Status: !e.IsActive ? EventStatus.Cancelado :
+                            e.EndDate < DateTime.UtcNow ? EventStatus.Completado : EventStatus.Activo,
                     TotalTicketsSold: e.Reservations
-                        .Where(r => r.Status == ReservationStatus.Confirmed)
+                        .Where(r => r.Status == ReservationStatus.Confirmada)
                         .Sum(r => r.Quantity),
                     TotalTicketsAvailable: e.MaxCapacity -
-                        e.Reservations.Where(r => r.Status == ReservationStatus.Confirmed)
+                        e.Reservations.Where(r => r.Status == ReservationStatus.Confirmada)
                             .Sum(r => r.Quantity),
                     OccupancyPercentage: e.MaxCapacity > 0 ?
                         Math.Round((decimal)e.Reservations
-                            .Where(r => r.Status == ReservationStatus.Confirmed)
+                            .Where(r => r.Status == ReservationStatus.Confirmada)
                             .Sum(r => r.Quantity) / e.MaxCapacity * 100, 2) : 0m,
                     TotalRevenue: e.Reservations
-                        .Where(r => r.Status == ReservationStatus.Confirmed)
+                        .Where(r => r.Status == ReservationStatus.Confirmada)
                         .Sum(r => r.Quantity) * e.Price,
                     StartDate: e.StartDate,
                     EndDate: e.EndDate))

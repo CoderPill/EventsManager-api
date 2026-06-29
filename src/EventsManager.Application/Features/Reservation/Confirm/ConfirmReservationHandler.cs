@@ -68,15 +68,15 @@ namespace EventsManager.Application.Features.Reservation.Confirm
             if (tempReservation is null)
                 return Result.Failure<string>(string.Format(SystemMessages.Validations.Error_NotFound, SystemValues.PropertyNames.Reservation));
 
-            if (tempReservation.Status == ReservationStatus.Cancelled)
+            if (tempReservation.Status == ReservationStatus.Cancelada)
                 return Result.Failure<string>(SystemMessages.Validations.Rule_ReservationAlreadyCancelled);
 
-            if (tempReservation.Status == ReservationStatus.Confirmed)
+            if (tempReservation.Status == ReservationStatus.Confirmada)
                 return Result.Failure<string>(SystemMessages.Validations.Rule_ReservationAlreadyConfirmed);
 
             var now = _timeProvider.GetNowColombia();
 
-            tempReservation.Status = Core.Enums.ReservationStatus.Confirmed;
+            tempReservation.Status = Core.Enums.ReservationStatus.Confirmada;
             tempReservation.ReservationCode = request.ConfirmationCode;
             _reservationRepository.Update(tempReservation);
             await _reservationRepository.SaveChangesAsync();
