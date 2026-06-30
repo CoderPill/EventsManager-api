@@ -1,20 +1,21 @@
-﻿using EventsManager.Core.Entities;
+﻿using EventsManager.Core.Common.Time;
+using EventsManager.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace EventsManager.Infrastructure.Persistence.Features.Venue
 {
     public static class VenueSeeder
     {
-        public static async Task SeedAsync(DbContext context)
+        public static async Task SeedAsync(DbContext context, IDateTimeProvider dateTimeProvider)
         {
             var hasData = await context.Set<VenueEntity>().AnyAsync();
             if (hasData) return;
 
             var defaultVenues = new List<VenueEntity>
         {
-            new() { Name="Auditorio Central",Capacity=200,City="Bogota", CreationDate = DateTime.Now },
-            new() { Name="Sala Norte",Capacity=50,City="Bogota", CreationDate = DateTime.Now },
-            new() { Name="Sala Sur",Capacity=500,City="Medellin", CreationDate = DateTime.Now }
+            new() { Name="Auditorio Central",Capacity=200,City="Bogota", CreationDate = dateTimeProvider.GetNowColombia() },
+            new() { Name="Sala Norte",Capacity=50,City="Bogota", CreationDate = dateTimeProvider.GetNowColombia() },
+            new() { Name="Sala Sur",Capacity=500,City="Medellin", CreationDate = dateTimeProvider.GetNowColombia() }
         };
 
             await context.Set<VenueEntity>().AddRangeAsync(defaultVenues);

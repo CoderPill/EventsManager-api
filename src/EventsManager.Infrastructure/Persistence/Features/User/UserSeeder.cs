@@ -1,4 +1,5 @@
 ﻿using EventsManager.Application.Common.Interfaces.Tools;
+using EventsManager.Core.Common.Time;
 using EventsManager.Core.Entities;
 using EventsManager.Core.Enums;
 using EventsManager.Infrastructure.Settings;
@@ -8,7 +9,7 @@ namespace EventsManager.Infrastructure.Persistence.Features.User
 {
     public static class UserSeeder
     {
-        public static async Task SeedAsync(DbContext context, AdminSeedSettings adminSeedSettings, IPasswordHasher passwordHasher)
+        public static async Task SeedAsync(DbContext context, AdminSeedSettings adminSeedSettings, IPasswordHasher passwordHasher, IDateTimeProvider dateTimeProvider)
         {
             var hasUsers = await context.Set<UserEntity>().AnyAsync();
             if (hasUsers) return;
@@ -24,7 +25,7 @@ namespace EventsManager.Infrastructure.Persistence.Features.User
                 PasswordHash = hashedPass,
                 Role = UserRole.Admin,
                 IsActive = true,
-                CreationDate = DateTime.Now
+                CreationDate = dateTimeProvider.GetNowColombia()
             };
 
             await context.Set<UserEntity>().AddAsync(adminUser);

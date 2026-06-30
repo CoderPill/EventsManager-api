@@ -10,31 +10,31 @@ namespace EventsManager.Application.Features.Event
     {
         extension(EventEntity instance)
         {
-            private EventStatus CalculateStatus()
+            private EventStatus CalculateStatus(DateTime colombiaNow)
             {
                 if (!instance.IsActive)
                     return EventStatus.Cancelado;
 
-                if (instance.EndDate < DateTime.UtcNow)
+                if (instance.EndDate < colombiaNow)
                     return EventStatus.Completado;
 
                 return EventStatus.Activo;
             }
-            public EventDTO ToDto()
+            public EventDTO ToDto(DateTime colombiaNow)
             {
-                return EventDTO.From(instance.Id, instance.Title, instance.Description, instance.VenueId, instance.MaxCapacity, instance.StartDate, instance.EndDate, instance.Price, instance.Type, instance.CalculateStatus(), instance.CreationDate);
+                return EventDTO.From(instance.Id, instance.Title, instance.Description, instance.VenueId, instance.MaxCapacity, instance.StartDate, instance.EndDate, instance.Price, instance.Type, instance.CalculateStatus(colombiaNow), instance.CreationDate);
             }
-            public EventDTO ToDtoIncludeVenue()
+            public EventDTO ToDtoIncludeVenue(DateTime colombiaNow)
             {
-                return EventDTO.From(instance.Id, instance.Title, instance.Description, instance.VenueId, instance.MaxCapacity, instance.StartDate, instance.EndDate, instance.Price, instance.Type, instance.CalculateStatus(), instance.CreationDate, instance.Venue?.ToDto());
+                return EventDTO.From(instance.Id, instance.Title, instance.Description, instance.VenueId, instance.MaxCapacity, instance.StartDate, instance.EndDate, instance.Price, instance.Type, instance.CalculateStatus(colombiaNow), instance.CreationDate, instance.Venue?.ToDto());
             }
-            public EventDTO ToDtoIncludeReservations()
+            public EventDTO ToDtoIncludeReservations(DateTime colombiaNow)
             {
-                return EventDTO.From(instance.Id, instance.Title, instance.Description, instance.VenueId, instance.MaxCapacity, instance.StartDate, instance.EndDate, instance.Price, instance.Type, instance.CalculateStatus(), instance.CreationDate, null, instance.Reservations?.Select(r => r.ToDto()).ToList());
+                return EventDTO.From(instance.Id, instance.Title, instance.Description, instance.VenueId, instance.MaxCapacity, instance.StartDate, instance.EndDate, instance.Price, instance.Type, instance.CalculateStatus(colombiaNow), instance.CreationDate, null, instance.Reservations?.Select(r => r.ToDto()).ToList());
             }
-            public EventDTO ToDtoIncludeVenueAndReservations()
+            public EventDTO ToDtoIncludeVenueAndReservations(DateTime colombiaNow)
             {
-                return EventDTO.From(instance.Id, instance.Title, instance.Description, instance.VenueId, instance.MaxCapacity, instance.StartDate, instance.EndDate, instance.Price, instance.Type, instance.CalculateStatus(), instance.CreationDate, instance.Venue?.ToDto(), instance.Reservations?.Select(r => r.ToDto()).ToList());
+                return EventDTO.From(instance.Id, instance.Title, instance.Description, instance.VenueId, instance.MaxCapacity, instance.StartDate, instance.EndDate, instance.Price, instance.Type, instance.CalculateStatus(colombiaNow), instance.CreationDate, instance.Venue?.ToDto(), instance.Reservations?.Select(r => r.ToDto()).ToList());
             }
         }
 

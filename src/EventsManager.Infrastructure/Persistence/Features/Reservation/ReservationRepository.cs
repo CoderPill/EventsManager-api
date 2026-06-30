@@ -1,4 +1,5 @@
 ﻿using EventsManager.Application.Common.Interfaces.Persistence;
+using EventsManager.Core.Common.Time;
 using EventsManager.Core.Constants;
 using EventsManager.Core.Entities;
 using EventsManager.Core.Enums;
@@ -10,7 +11,7 @@ namespace EventsManager.Infrastructure.Persistence.Features.Reservation
 {
     public class ReservationRepository : BaseRepository<ReservationEntity>, IReservationRepository
     {
-        public ReservationRepository(DbContextEventsManager dbContext) : base(dbContext)
+        public ReservationRepository(DbContextEventsManager dbContext, IDateTimeProvider timeProvider) : base(dbContext, timeProvider)
         {
         }
         public async Task<int> GetCurrentOccupationByEventIdAsync(int eventId)
@@ -20,7 +21,7 @@ namespace EventsManager.Infrastructure.Persistence.Features.Reservation
         }
         public async Task<bool> ExistsByCodeAsync(string code)
         {
-            return await _DbSet.AnyAsync(r => r.ReservationCode == code);
+            return await _dbSet.AnyAsync(r => r.ReservationCode == code);
         }
         public async Task<ReservationEntity?> GetByCodeAsync(string buyerEmail, string code)
         {

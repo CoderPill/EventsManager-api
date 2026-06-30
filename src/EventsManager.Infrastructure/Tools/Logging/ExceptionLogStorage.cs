@@ -1,4 +1,6 @@
-﻿namespace EventsManager.Infrastructure.Tools.Logging
+﻿using EventsManager.Core.Common.Time;
+
+namespace EventsManager.Infrastructure.Tools.Logging
 {
     public interface IExceptionLogStorage
     {
@@ -8,9 +10,11 @@
     {
         private readonly SemaphoreSlim _semaphore = new(1, 1);
         private readonly string _logDirectory;
+        private readonly IDateTimeProvider _timeProvider;
 
-        public ExceptionLogStorage()
+        public ExceptionLogStorage(IDateTimeProvider timeProvider)
         {
+            _timeProvider = timeProvider;
             _logDirectory = Path.Combine(Directory.GetCurrentDirectory(), "ExceptionLogs");
             EnsureDirectoryExists();
         }
@@ -20,7 +24,7 @@
             await _semaphore.WaitAsync();
             try
             {
-                var fileName = $"Errors-{DateTime.Now:yyyy-MM-dd}.txt";
+                var fileName = $"Errors-{_timeProvider.GetNowColombia():yyyy-MM-dd}.txt";
                 var filePath = Path.Combine(_logDirectory, fileName);
                 await File.AppendAllTextAsync(filePath, content);
             }

@@ -1,5 +1,6 @@
 ﻿using EventsManager.Application.Common.DTOs;
 using EventsManager.Application.Common.Interfaces.Tools;
+using EventsManager.Core.Common.Time;
 using EventsManager.Infrastructure.Settings;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
@@ -13,10 +14,12 @@ namespace EventsManager.Infrastructure.Tools
     {
         private readonly JwtSettings _jwtSettings;
         private readonly IMemoryCache _cache;
-        public JwtService(IMemoryCache cache, JwtSettings jwtSettings)
+        private readonly IDateTimeProvider _timeProvider;
+        public JwtService(IMemoryCache cache, JwtSettings jwtSettings, IDateTimeProvider timeProvider)
         {
             _cache = cache;
             _jwtSettings = jwtSettings;
+            _timeProvider = timeProvider;
         }
         public string Generate(JwtGenerateRequest request)
         {
@@ -33,7 +36,7 @@ namespace EventsManager.Infrastructure.Tools
 
             var jwtConfiguration = new JwtSecurityToken(
                                         claims: claims,
-                                        expires: DateTime.Now.AddHours(_jwtSettings.ExpirationInHours),
+                                        expires: _timeProvider.GetUtcNow().AddHours(_jwtSettings.ExpirationInHours),
                                         signingCredentials: credentials
                                         );
             return new JwtSecurityTokenHandler().WriteToken(jwtConfiguration);

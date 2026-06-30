@@ -13,9 +13,9 @@ namespace EventsManager.Application.Features.Reservation
             {
                 return ReservationDTO.From(instance.Id, instance.EventId, instance.BuyerName, instance.BuyerEmail, instance.Quantity, instance.Status, instance.ReservationCode, instance.CancelDate, instance.HasPenalty, instance.CreationDate);
             }
-            public ReservationDTO ToDtoIncludeEvent()
+            public ReservationDTO ToDtoIncludeEvent(DateTime colombiaNow)
             {
-                return ReservationDTO.From(instance.Id, instance.EventId, instance.BuyerName, instance.BuyerEmail, instance.Quantity, instance.Status, instance.ReservationCode, instance.CancelDate, instance.HasPenalty, instance.CreationDate, instance.Event?.ToDto());
+                return ReservationDTO.From(instance.Id, instance.EventId, instance.BuyerName, instance.BuyerEmail, instance.Quantity, instance.Status, instance.ReservationCode, instance.CancelDate, instance.HasPenalty, instance.CreationDate, instance.Event?.ToDto(colombiaNow));
             }
         }
         extension(AddReservationRequest instance)

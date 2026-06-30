@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using EventsManager.Core.Common.Time;
+using System.Diagnostics;
 using System.Text;
 
 namespace EventsManager.Infrastructure.Tools.Logging
@@ -9,10 +10,17 @@ namespace EventsManager.Infrastructure.Tools.Logging
     }
     public class ExceptionInfoExtractor : IExceptionInfoExtractor
     {
+        private readonly IDateTimeProvider _timeProvider;
+
+        public ExceptionInfoExtractor(IDateTimeProvider timeProvider)
+        {
+            _timeProvider = timeProvider;
+        }
+
         public string ExtractExceptionInfo(Exception ex)
         {
             var sb = new StringBuilder();
-            var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            var timestamp = _timeProvider.GetNowColombia().ToString("yyyy-MM-dd HH:mm:ss");
             sb.AppendLine($"========================================");
             sb.AppendLine($"ERROR - {timestamp}");
             sb.AppendLine($"========================================");

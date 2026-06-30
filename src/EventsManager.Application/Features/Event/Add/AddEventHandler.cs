@@ -1,6 +1,7 @@
 ﻿using EventsManager.Application.Common.Interfaces.Persistence;
 using EventsManager.Application.Common.ResultPattern;
 using EventsManager.Application.Common.UseCases;
+using EventsManager.Core.Common.Time;
 using EventsManager.Core.Constants;
 using FluentValidation;
 
@@ -10,11 +11,13 @@ namespace EventsManager.Application.Features.Event.Add
     {
         private readonly IVenueRepository _venueRepository;
         private readonly IEventRepository _eventRepository;
-        public AddEventHandler(IValidator<AddEventRequest> validator, IEventRepository eventRepository, IVenueRepository venueRepository)
+        private readonly IDateTimeProvider _timeProvider;
+        public AddEventHandler(IValidator<AddEventRequest> validator, IEventRepository eventRepository, IVenueRepository venueRepository, IDateTimeProvider timeProvider)
             : base(validator)
         {
             _eventRepository = eventRepository;
             _venueRepository = venueRepository;
+            _timeProvider = timeProvider;
         }
         protected override async Task<Result<EventDTO>> OnExecute(AddEventRequest request)
         {
@@ -51,7 +54,7 @@ namespace EventsManager.Application.Features.Event.Add
             var newEvent = request.ToEntity();
             await _eventRepository.AddAsync(newEvent);
             await _eventRepository.SaveChangesAsync();
-            return newEvent.ToDto();
+            return newEvent.ToDto(_timeProvider.GetNowColombia());
         }
     }
 }

@@ -2,9 +2,9 @@
 
 namespace EventsManager.Application.Common.DTOs
 {
-    public record JwtRevokeRequest(string Jti, DateTime ExpiresDate)
+    public record JwtRevokeRequest(string Jti, DateTimeOffset ExpiresDate)
     {
-        public static JwtRevokeRequest From(string jti, DateTime expiresDate)
+        public static JwtRevokeRequest From(string jti, DateTimeOffset expiresDate)
         {
             return new(jti, expiresDate);
         }

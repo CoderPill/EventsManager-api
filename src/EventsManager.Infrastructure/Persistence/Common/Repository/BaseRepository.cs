@@ -1,4 +1,5 @@
 ﻿using EventsManager.Application.Common.Interfaces.Persistence;
+using EventsManager.Core.Common.Time;
 using EventsManager.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
@@ -8,28 +9,30 @@ namespace EventsManager.Infrastructure.Persistence.Common.Repository
     public abstract class BaseRepository<TEntity> : IBaseRepository<TEntity>
      where TEntity : BaseEntity
     {
-        protected readonly DbContext _DbContext;
-        protected DbSet<TEntity> _DbSet;
-        public BaseRepository(DbContext dbContext)
+        protected readonly DbContext _dbContext;
+        protected DbSet<TEntity> _dbSet;
+        protected IDateTimeProvider _timeProvider;
+        public BaseRepository(DbContext dbContext, IDateTimeProvider dateTimeProvider)
         {
-            _DbContext = dbContext;
-            _DbSet = dbContext.Set<TEntity>();
+            _dbContext = dbContext;
+            _dbSet = dbContext.Set<TEntity>();
+            _timeProvider = dateTimeProvider;
         }
 
         public async Task SaveChangesAsync()
         {
-            await _DbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync();
         }
         public virtual async Task AddAsync(TEntity entity)
         {
             if (entity.CreationDate == default)
-                entity.CreationDate = DateTime.Now;
-            await _DbSet.AddAsync(entity);
+                entity.CreationDate = _timeProvider.GetNowColombia();
+            await _dbSet.AddAsync(entity);
         }
 
         public virtual async Task<TEntity?> GetByIdAsync(int id)
         {
-            return await _DbSet.FindAsync(id);
+            return await _dbSet.FindAsync(id);
         }
         public async Task<List<TEntity>> GetAllAsync(
              Expression<Func<TEntity, bool>>? predicate = null
@@ -52,7 +55,7 @@ namespace EventsManager.Infrastructure.Persistence.Common.Repository
             , bool noTracking = true
             , params string[] includes)
         {
-            IQueryable<TEntity> query = _DbSet;
+            IQueryable<TEntity> query = _dbSet;
 
             if (noTracking)
             {
@@ -70,22 +73,22 @@ namespace EventsManager.Infrastructure.Persistence.Common.Repository
         }
         public void Update(TEntity entity)
         {
-            _DbContext.Update(entity);
+            _dbContext.Update(entity);
         }
 
         public void UpdateCollection(IEnumerable<TEntity> entities)
         {
-            _DbContext.UpdateRange(entities);
+            _dbContext.UpdateRange(entities);
         }
 
         public void Delete(TEntity entity)
         {
-            _DbContext.Remove(entity);
+            _dbContext.Remove(entity);
         }
 
         public void DeleteCollection(IEnumerable<TEntity> entities)
         {
-            _DbContext.RemoveRange(entities);
+            _dbContext.RemoveRange(entities);
         }
     }
 }

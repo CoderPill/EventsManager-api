@@ -63,7 +63,7 @@ namespace EventsManager.Api.Controllers
             var jti = User.FindFirst(JwtRegisteredClaimNames.Jti)!.Value;
             var expClaim = User.FindFirst("exp")!.Value;
 
-            DateTime expiration = DateTimeOffset.FromUnixTimeSeconds(long.Parse(expClaim)).DateTime;
+            DateTimeOffset expiration = DateTimeOffset.FromUnixTimeSeconds(long.Parse(expClaim));
 
             return await _userUseCases.Logout.Execute(LogoutRequest.From(jti, expiration))
                 .ToActionResult(HttpStatusCode.NoContent);

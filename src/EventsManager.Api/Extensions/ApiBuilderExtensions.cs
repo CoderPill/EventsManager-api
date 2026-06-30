@@ -1,4 +1,5 @@
 ﻿using EventsManager.Application.Common.Interfaces.Tools;
+using EventsManager.Core.Common.Time;
 using EventsManager.Infrastructure.Persistence.Common.Context;
 using EventsManager.Infrastructure.Persistence.Common.DataSeed;
 using EventsManager.Infrastructure.Settings;
@@ -19,15 +20,19 @@ namespace EventsManager.Api.Extensions
                 {
                     var context = services.GetRequiredService<DbContextEventsManager>();
                     var passwordHasher = services.GetRequiredService<IPasswordHasher>();
+                    var timeProvider = services.GetRequiredService<IDateTimeProvider>();
 
                     // 1. Migraciones Automáticas: Siempre se ejecutan al arrancar
                     if ((await context.Database.GetPendingMigrationsAsync()).Any())
                     {
-                        await context.Database.MigrateAsync();
-                    }
+                        if (context.Database.IsRelational())
+                        {
+                            await context.Database.MigrateAsync();
+                        }
 
-                    // 2. Seeding Manual: Se ejecuta SIEMPRE y cada seeder evalúa si su tabla está vacía
-                    await MainSeeder.SeedAllAsync(context, adminSeedConfig, passwordHasher);
+                        // 2. Seeding Manual: Se ejecuta SIEMPRE y cada seeder evalúa si su tabla está vacía
+                        await MainSeeder.SeedAllAsync(context, adminSeedConfig, passwordHasher, timeProvider);
+                    }
                 }
                 catch (Exception ex)
                 {

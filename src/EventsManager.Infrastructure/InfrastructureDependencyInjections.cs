@@ -22,9 +22,9 @@ namespace EventsManager.Infrastructure
         {
             public void AddInfrastructure(ConnectionStringsSettings connectionStringsSettings, SmtpSettings smtpSettings)
             {
+                services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
                 services.AddSingleton<IExceptionInfoExtractor, ExceptionInfoExtractor>();
                 services.AddSingleton<IExceptionLogStorage, ExceptionLogStorage>();
-                services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
 
                 services.AddDbContext<DbContextEventsManager>(options => options.UseSqlServer(connectionStringsSettings.DefaultConnection));
 
