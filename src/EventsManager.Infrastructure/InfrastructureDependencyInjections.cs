@@ -28,7 +28,7 @@ namespace EventsManager.Infrastructure
 
                 services.AddDbContext<DbContextEventsManager>(options => options.UseSqlServer(connectionStringsSettings.DefaultConnection));
 
-                if (smtpSettings.Enabled)
+                if (smtpSettings.SendEnabled)
                     services.AddScoped<IEmailService, EmailService>();
                 else
                     services.AddScoped<IEmailService, NullEmailService>();

@@ -2,6 +2,7 @@
 using EventsManager.Application.Common.Interfaces.Persistence;
 using EventsManager.Application.Common.ResultPattern;
 using EventsManager.Application.Common.UseCases;
+using EventsManager.Core.Constants;
 using FluentValidation;
 
 namespace EventsManager.Application.Features.Reservation.Get
@@ -15,8 +16,8 @@ namespace EventsManager.Application.Features.Reservation.Get
         }
         protected override async Task<Result<List<ReservationDTO>>> OnExecute(Unit request)
         {
-            var reservations = await _reservationRepository.GetAllAsync();
-            return reservations.Select(r => r.ToDto()).ToList();
+            var reservations = await _reservationRepository.GetAllAsync(null, true, SystemValues.QueryIncludes.Reservation_Event);
+            return reservations.Select(r => r.ToDtoIncludeEvent()).ToList();
         }
     }
 }

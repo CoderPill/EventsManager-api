@@ -25,7 +25,7 @@
             public const string Rule_EventScheduleOverlap = "Ya existe un Evento activo en este Lugar con horarios superpuestos";
             public const string Rule_ReservationTooCloseToStart = "No se permiten reservas para eventos que inicien en menos de 1 hora";
             public const string Rule_ReservationTooLate = "No se permiten reservas para eventos que ya iniciaron o finalizaron";
-            public const string Rule_InsufficientCapacity = "Solo hay {0} entradas disponibles";
+            public const string Rule_InsufficientCapacity = "{0} entradas disponibles";
             public const string Rule_MaxQuantityForLastDay = "Para eventos que inician en menos de 24 horas, el máximo es 5 entradas por transacción";
             public const string Rule_MaxQuantityForExpensiveEvent = "Para eventos con precio mayor a $100, el máximo es 10 entradas por transacción";
             public const string Rule_CouldNotGenerateReservationCode = "No se pudo generar un codigo unico para la reserva. Intente nuevamente.";

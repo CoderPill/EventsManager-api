@@ -2,7 +2,7 @@
 {
     public class SmtpSettings
     {
-        public bool Enabled { get; set; }
+        public bool SendEnabled { get; set; }
         public string Host { get; set; } = string.Empty;
         public int Port { get; set; }
         public string SmtpUsername { get; set; } = string.Empty;
