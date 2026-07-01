@@ -384,14 +384,14 @@ test/EventsManager.Application.Tests/
     │       └── GetOccupationReportHandlerTests.cs  # 2 tests
     └── Reservation/
         ├── Add/AddReservationHandlerTests.cs       # 9 tests (8 reglas + 1 validación)
-        ├── Cancel/CancelReservationHandlerTests.cs # 6 tests (5 reglas + 1 validación)
+        ├── Cancel/CancelReservationHandlerTests.cs # 7 tests (6 reglas + 1 validación)
         ├── Confirm/ConfirmReservationHandlerTests.cs # 6 tests (5 reglas + 1 validación)
         ├── Get/GetReservationsHandlerTests.cs      # 1 test
         └── GetByReservationCode/
             └── GetByReservationCodeHandlerTests.cs # 2 tests
 ```
 
-**Total: 13 archivos de test, 39 casos, ~2 segundos de ejecución.**
+**Total: 13 archivos de test, 40 casos, ~2 segundos de ejecución.**
 
 ### 11.3 Stack de herramientas
 
@@ -588,10 +588,10 @@ Donde los repositorios son implementaciones InMemory concretas (no mocks), el sh
 | `AddReservationHandler` | 9 | Event exists, is active, not started, ≥1hr, capacity, <24hrs+qty>5, price>100+qty>10, Add + SaveChanges + validación rechazada |
 | `GetReservationsHandler` | 1 | GetAll |
 | `GetByReservationCodeHandler` | 2 | Exists with Event Include, not found |
-| `CancelReservationHandler` | 6 | Exists, already cancelled, not confirmed, event exists, penalty calc, Update + SaveChanges + validación rechazada |
+| `CancelReservationHandler` | 7 | Exists, already cancelled, not confirmed, event exists, penalty calc (<48h), penalty calc (>48h), Update + SaveChanges + validación rechazada |
 | `ConfirmReservationHandler` | 6 | Code gen loop, exists, already cancelled, already confirmed, Update + SaveChanges + Email + validación rechazada |
 
-**Total: 13 targets de test (12 handlers + BaseUseCase), 39 tests. Cada handler cubre reglas de negocio + el camino de validación rechazada.**
+**Total: 13 targets de test (12 handlers + BaseUseCase), 40 tests. Cada handler cubre reglas de negocio + el camino de validación rechazada.**
 
 ### 11.8 Agregar un test nuevo
 
