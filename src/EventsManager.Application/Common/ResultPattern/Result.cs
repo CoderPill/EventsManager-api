@@ -19,6 +19,7 @@ namespace EventsManager.Application.Common.ResultPattern
 
         internal Result(ImmutableArray<string> errors)
         {
+            _isInitialized = true;
             Value = default(T)!;
             Errors = errors;
         }

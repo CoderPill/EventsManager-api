@@ -98,7 +98,7 @@ namespace EventsManager.Api.Controllers
         /// <item><strong>ReservationCode</strong> (string, requerido, formato EV-XXXXXX): código de reserva a cancelar.</item>
         /// </list>
         /// </param>
-        /// <response code="204">Cancelación exitosa (sin contenido).</response>
+        /// <response code="200">Cancelación exitosa.</response>
         /// <response code="400">Email/código inválidos. Reglas: reserva ya cancelada, reserva no está confirmada (solo confirmadas se cancelan), evento no encontrado.</response>
         /// <response code="404">Reserva no encontrada.</response>
         [HttpPut("cancel")]

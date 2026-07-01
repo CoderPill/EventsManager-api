@@ -12,9 +12,9 @@ namespace EventsManager.Infrastructure.Persistence.Features.Event
 {
     public class EventRepository : BaseRepository<EventEntity>, IEventRepository
     {
-        public EventRepository(DbContextEventsManager dbContext, IDateTimeProvider timeProvider) : base(dbContext,timeProvider)
+        public EventRepository(DbContextEventsManager dbContext, IDateTimeProvider timeProvider) : base(dbContext, timeProvider)
         {
-            
+
         }
 
         public async Task<bool> HasOverlappingEventAsync(

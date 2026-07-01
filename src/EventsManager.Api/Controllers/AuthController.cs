@@ -7,7 +7,6 @@ using EventsManager.Application.Features.User.Logout;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
-using System.Net;
 
 namespace EventsManager.Api.Controllers
 {
@@ -53,10 +52,10 @@ namespace EventsManager.Api.Controllers
         /// Requiere header Authorization: Bearer &lt;token&gt;.
         /// Extrae jti y exp del token para agregarlo a la lista de revocados.
         /// </remarks>
-        /// <response code="204">Logout exitoso (sin contenido).</response>
+        /// <response code="200">Logout exitoso.</response>
         /// <response code="401">Token inválido, expirado o revocado.</response>
         [HttpPost("logout")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(Result<Unit>), StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Logout()
         {
@@ -66,7 +65,7 @@ namespace EventsManager.Api.Controllers
             DateTimeOffset expiration = DateTimeOffset.FromUnixTimeSeconds(long.Parse(expClaim));
 
             return await _userUseCases.Logout.Execute(LogoutRequest.From(jti, expiration))
-                .ToActionResult(HttpStatusCode.NoContent);
+                .ToActionResult();
         }
     }
 }

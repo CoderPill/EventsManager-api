@@ -8,7 +8,7 @@ namespace EventsManager.Application.Features.Venue.Add
     public class AddVenueHandler : BaseUseCase<AddVenueRequest, VenueDto>
     {
         private readonly IVenueRepository _venueRepository;
-        public AddVenueHandler(IVenueRepository venueRepository, IValidator<AddVenueRequest> validator)
+        public AddVenueHandler(IValidator<AddVenueRequest> validator, IVenueRepository venueRepository)
             : base(validator)
         {
             _venueRepository = venueRepository;

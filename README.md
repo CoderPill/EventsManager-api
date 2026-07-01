@@ -162,7 +162,7 @@ Result<T> ──▶ Controller ──▶ ResultActionExtensions.ToActionResult()
 
 | Entidad | Campos clave | Reglas de integridad |
 |---------|--------------|---------------------|
-| `UserEntity` | `Username`, `PasswordHash`, `Role` (Admin/Organizer/Client) | Username único |
+| `UserEntity` | `Username`, `PasswordHash`, `Role` (Admin) | Username único |
 | `VenueEntity` | `Name` (≤32), `Capacity` (>0), `City` (≤32) | - |
 | `EventEntity` | `Title` (5-100), `Description` (10-500), `VenueId`, `MaxCapacity` (>0), `StartDate`/`EndDate`, `Price` (>0), `EventType`, `Status`, `IsActive` | Capacidad ≤ Venue; no solape en venue; fin de semana ≤22:00; EndDate > StartDate |
 | `ReservationEntity` | `EventId`, `Quantity` (≥1), `BuyerName` (≤32), `BuyerEmail` (email, ≤64), `Status`, `ReservationCode` (`EV-XXXXXX`), `CancelDate`, `HasPenalty` | Solo eventos activos/futuros; ≥1h antes; capacidad disponible |
@@ -221,7 +221,7 @@ Tools/
 
 Ejemplos:
 - `Features/Event/Add/` → `AddEventHandler`, `AddEventRequest`, `AddEventValidator`
-- `Persistence/Features/Event/` → `EventRepository`, `EventConfiguration`, `EventSeeder`
+- `Persistence/Features/Event/` → `EventRepository`, `EventConfiguration`
 - `Features/Reservation/Cancel/` → `CancelReservationHandler`, `CancelReservationRequest`, `CancelReservationValidator`
 - `Persistence/Features/Reservation/` → `ReservationRepository`, `ReservationConfiguration`
 - `Features/User/Login/` → `LoginHandler`, `LoginRequest`, `LoginRequestValidator`
@@ -279,8 +279,8 @@ Registro DI en `InfrastructureDependencyInjections.cs`: repositorios, `IEmailSer
 | Capacidad disponible ≥ Quantity | `AddReservationHandler` | `Rule_InsufficientCapacity` (available) | 400 | `MaxCapacity - GetCurrentOccupationByEventIdAsync()` |
 | Si <24h al inicio → máx 5 entradas | `AddReservationHandler` | `Rule_MaxQuantityForLastDay` | 400 | `secondsUntilStart < 86400 && Quantity > 5` |
 | Si precio > $100 → máx 10 entradas | `AddReservationHandler` | `Rule_MaxQuantityForExpensiveEvent` | 400 | `Price > 100m && Quantity > 10` |
-| Cancelar solo reservas Confirmadas | `CancelReservationHandler` | `Rule_OnlyConfirmedCanBeCancelled` | 400 | `reservation.Status != ReservationStatus.Confirmed` |
-| Penalización si cancelación <48h | `CancelReservationHandler` | `Rule_CancellationPenalty` | 200 | `HasPenalty = (StartDate - Now).TotalHours < 48` |
+| Cancelar solo reservas Confirmadas | `CancelReservationHandler` | `Rule_ReservationNotConfirmed` | 400 | `reservation.Status != ReservationStatus.Confirmed` |
+| Penalización si cancelación <48h | `CancelReservationHandler` | — (lógica interna) | 200 | `HasPenalty = (StartDate - Now).TotalHours < 48` |
 | Código único al confirmar (max 5 intentos) | `ConfirmReservationHandler` | `Rule_UniqueCodeGenerationFailed` | 400 | Loop `IAlphaNumericCodeGenerator.Generate()` + `ReservationRepository.ExistsByCodeAsync()` |
 | Usuario existe y credenciales válidas | `LoginHandler` | `Error_Credentials` | 400 | `IUserRepository.GetByUsernameAsync` + `PasswordHasher.Verify` |
 | Revocación JTI en logout | `LogoutHandler` | `Error_RevokedToken` / `Error_InvalidToken` | 401 | `IJwtService.Revoke(jti, exp)` + `OnTokenValidated` valida `IsRevoked` |
@@ -310,7 +310,7 @@ Registro DI en `InfrastructureDependencyInjections.cs`: repositorios, `IEmailSer
 | Método | Ruta | Auth | Request DTO | Response DTO | Códigos HTTP | Reglas clave (ref 7.2) |
 |--------|------|------|-------------|--------------|--------------|------------------------|
 | POST | `/api/Auth/login` | Público | `LoginRequest` | `Result<string>` (JWT) | 200, 400 | Credenciales válidas |
-| POST | `/api/Auth/logout` | JWT | — | 204 | 204, 401 | Revocación JTI |
+| POST | `/api/Auth/logout` | JWT | — | `Result<Unit>` | 200, 401 | Revocación JTI |
 | GET | `/api/Venues` | Público | — | `Result<List<VenueDto>>` | 200 | - |
 | POST | `/api/Venues` | JWT | `AddVenueRequest` | `Result<VenueDto>` | 200, 400, 401 | Validaciones Venue |
 | GET | `/api/Event` | Público | — | `Result<List<EventDTO>>` (con Venue) | 200 | - |
@@ -319,7 +319,7 @@ Registro DI en `InfrastructureDependencyInjections.cs`: repositorios, `IEmailSer
 | GET | `/api/Reservations` | JWT | — | `Result<List<ReservationDTO>>` | 200, 401 | - |
 | GET | `/api/Reservations/getByReservationCode` | Público | `BuyerEmail`, `ReservationCode` | `Result<ReservationDTO>` (con Event) | 200, 400, 404 | Formato código EV-XXXXXX |
 | POST | `/api/Reservations` | Público | `AddReservationRequest` | `Result<ReservationDTO>` (PendientePago) | 200, 400 | 7 reglas negocio (7.2) |
-| PUT | `/api/Reservations/cancel` | Público | `BuyerEmail`, `ReservationCode` | 204 | 204, 400, 404 | Solo confirmadas, penalización |
+| PUT | `/api/Reservations/cancel` | Público | `BuyerEmail`, `ReservationCode` | `Result<Unit>` | 200, 400, 404 | Solo confirmadas, penalización |
 | PUT | `/api/Reservations/confirm` | JWT | `ReservationId` | `Result<string>` (código EV-XXXXXX) | 200, 400, 401, 404 | Código único max 5 intentos |
 
 > Todas las respuestas usan envoltorio `Result<T>`: `{ "isSuccess": true, "value": {...}, "errors": [] }` o `{ "isSuccess": false, "value": null, "errors": ["mensaje"] }`.
@@ -350,3 +350,275 @@ Registro DI en `InfrastructureDependencyInjections.cs`: repositorios, `IEmailSer
 **JWT Challenges** → 401 con `Result.Failure(Error_Unauthorized/Error_InvalidToken/Error_RevokedToken)` via `JwtBearerEvents`.
 
 ---
+
+## 11. Testing Strategy
+
+La suite de tests de la Application layer verifica cada handler de caso de uso contra sus reglas de negocio. Los tests se ejecutan en paralelo, aíslan estado por escenario y usan implementaciones reales para repositorios con mocks solo en los límites del sistema.
+
+### 11.1 Prerrequisitos
+
+```bash
+dotnet test test/EventsManager.Application.Tests
+```
+
+Sin dependencias externas: no requiere SQL Server, SMTP ni JWT. EF Core InMemory sustituye la base de datos y el resto de servicios externos se mockean.
+
+### 11.2 Proyecto de tests
+
+```
+test/EventsManager.Application.Tests/
+├── EventsManager.Application.Tests.csproj
+├── Common/
+│   ├── BaseUseCaseTests.cs            # 1 test: short-circuit de validación en BaseUseCase
+│   ├── EntityBuilders.cs              # VenueEntityBuilder, EventEntityBuilder, ReservationEntityBuilder, UserEntityBuilder
+│   ├── FakeTimeProvider.cs            # IDateTimeProvider fijo: Colombia UTC-5, 2026-06-15
+│   ├── HandlerTestBase.cs             # Clase base: CreateInMemoryDbContext, MockValidValidator, Seed helpers
+│   ├── InMemoryDbCollection.cs        # ICollectionFixture para paralelismo (reservado)
+│   ├── InMemoryDbFixture.cs           # IClassFixture para InMemory (reservado)
+│   └── RequestBuilders.cs             # 12 builders de requests
+└── Features/
+    ├── Event/
+    │   ├── Add/AddEventHandlerTests.cs        # 5 tests (4 reglas + 1 validación)
+    │   ├── Get/GetEventsHandlerTests.cs       # 1 test
+    │   └── GetOccupationReport/
+    │       └── GetOccupationReportHandlerTests.cs  # 2 tests
+    └── Reservation/
+        ├── Add/AddReservationHandlerTests.cs       # 9 tests (8 reglas + 1 validación)
+        ├── Cancel/CancelReservationHandlerTests.cs # 6 tests (5 reglas + 1 validación)
+        ├── Confirm/ConfirmReservationHandlerTests.cs # 6 tests (5 reglas + 1 validación)
+        ├── Get/GetReservationsHandlerTests.cs      # 1 test
+        └── GetByReservationCode/
+            └── GetByReservationCodeHandlerTests.cs # 2 tests
+```
+
+**Total: 13 archivos de test, 39 casos, ~2 segundos de ejecución.**
+
+### 11.3 Stack de herramientas
+
+| Herramienta | Versión | Uso |
+|-------------|---------|-----|
+| xUnit | 2.9.3 | Framework de tests, paralelismo por defecto |
+| Moq | 4.20.72 | Mocks para servicios externos (email, JWT, codegen, hasher) |
+| EF Core InMemory | 10.0.9 | Base de datos ligera por test, sin SQL Server |
+| FluentAssertions | 6.12.2 | Aserciones legibles en Assert |
+| Microsoft.NET.Test.Sdk | 17.12.0 | CLI test runner |
+
+### 11.4 Patrones de diseño de tests
+
+Cada archivo de test sigue la misma estructura:
+
+#### TestState
+
+Clase privada anidada dentro de la clase de test. Contiene todas las dependencias del handler (repositorios, mocks, builders) y expone el handler ya construido. Se instancia fresco por cada `[Fact]`.
+
+```
+TestState
+├── DbContextEventsManager      # InMemory, database name = Guid único
+├── IEventRepository            # EventRepository real sobre el DbContext
+├── IReservationRepository      # ReservationRepository real sobre el DbContext
+├── IVenueRepository            # VenueRepository real (para handlers que lo requieren)
+├── IUserRepository             # UserRepository real (para handlers que lo requieren)
+├── Mock<IValidator<T>>         # Siempre retorna ValidationResult válido
+├── Mock<IAlphaNumericCodeGenerator>  # Solo en ConfirmReservation
+├── Mock<IEmailService>               # Solo en ConfirmReservation
+├── FakeTimeProvider            # IDateTimeProvider fijo, controlable
+├── Handler                     # Instancia real del handler con todas las dependencias
+└── RequestBuilder              # Builder para crear requests con defaults sensibles
+```
+
+Cada `TestState` captura el nombre de la base de datos InMemory y expone `CreateReaderContext()` para crear un segundo `DbContext` independiente que verifica la persistencia real de los datos.
+
+#### When_<Scenario>_Then_<Result>
+
+Cada método de test se nombra con el patrón `{Handler}_{When}{Scenario}_Then{Result}`:
+
+```csharp
+[Fact]
+public async Task AddReservation_WhenValidRequest_ThenReturnsSuccessWithReservationDto()
+[Fact]
+public async Task AddReservation_WhenEventNotFound_ThenReturnsFailureNotFound()
+[Fact]
+public async Task ConfirmReservation_WhenCodeGeneratorFails5Times_ThenReturnsFailureCodeGeneration()
+```
+
+El nombre describe exactamente qué se prueba: el escenario (`WhenEventNotFound`) y el resultado esperado (`ReturnsFailureNotFound`).
+
+#### AAA visible
+
+Cada test marca las tres fases con comentarios:
+
+```csharp
+// Arrange
+var state = new TestState();
+await SeedEventAsync(state.DbContext, e => e.WithId(1));
+var request = state.RequestBuilder.WithEventId(1).WithQuantity(2).Build();
+
+// Act
+var result = await state.Handler.Execute(request);
+
+// Assert
+result.IsSuccess.Should().BeTrue();
+result.Value.Quantity.Should().Be(2);
+```
+
+Sin lógica en el cuerpo del test (if/switch/loop), sin data inline, sin creación manual de entidades.
+
+#### Builders para datos
+
+Los builders eliminan la creación manual de entidades y requests. Cada builder expone métodos `With*()` fluidos que sobreescriben defaults sensibles:
+
+```csharp
+await SeedEventAsync(state.DbContext, e => e
+    .WithId(1)
+    .WithDates(soonStart, soonStart.AddHours(3))
+    .WithPrice(150m)
+    .WithMaxCapacity(100));
+```
+
+`EntityBuilders` cubren: `VenueEntityBuilder`, `EventEntityBuilder`, `ReservationEntityBuilder`, `UserEntityBuilder`.
+`RequestBuilders` cubren los 12 request types del sistema.
+
+Los defaults de fecha se derivan de `FakeTimeProvider.ColombiaNow` para mantener consistencia temporal en toda la suite.
+
+#### FakeTimeProvider
+
+Implementación de `IDateTimeProvider` fija en Colombia (UTC-5) al 15 de junio de 2026. Soportes para control en tests:
+
+| Método | Función |
+|--------|---------|
+| `GetNowColombia()` | Retorna la hora fija o el override activo |
+| `GetUtcNow()` | ColombiaNow + 5 horas, `DateTimeKind.Utc` |
+| `SetNow(DateTime)` | Fija un momento específico |
+| `Advance(TimeSpan)` | Desplaza el tiempo desde el momento actual |
+| `Reset()` | Vuelve al valor fijo original |
+
+Usado para probar ventanas de tiempo: regla de 1 hora antes del evento, regla de 24 horas (cantidad máxima 5), regla de evento costoso y penalización por cancelación de 48 horas.
+
+#### Validación-Rejection Tests
+
+Verifican que `BaseUseCase.Execute()` cortocircuita correctamente cuando FluentValidation rechaza un request. Cada handler comparte la misma implementación de `Execute()` — el test es único para la clase base más tests individuales para handlers con servicios mockeados.
+
+**BaseUseCase test**: un test double inline (`TestDoubleUseCase`) con un flag `OnExecuteCalled` prueba que el short-circuit funciona sin tocar `OnExecute`:
+
+```csharp
+[Fact]
+public async Task BaseUseCase_WhenValidatorRejects_ThenReturnsFailure()
+{
+    // Arrange
+    var validatorMock = new Mock<IValidator<Unit>>();
+    validatorMock
+        .Setup(v => v.ValidateAsync(It.IsAny<Unit>(), It.IsAny<CancellationToken>()))
+        .ReturnsAsync(new ValidationResult(new[] {
+            new ValidationFailure("Unit", "error")
+        }));
+    var testDouble = new TestDoubleUseCase(validatorMock.Object);
+
+    // Act
+    var result = await testDouble.Execute(Unit.Value);
+
+    // Assert
+    result.IsSuccess.Should().BeFalse();
+    result.Errors.Should().Contain("error");
+    testDouble.OnExecuteCalled.Should().BeFalse();
+}
+```
+
+**Handler-specific tests** (AddEvent, AddReservation, CancelReservation, ConfirmReservation): parten del `TestState` existente con sus dependencias reales, sobreescriben el mock del validator para que retorne errores, y verifican que ningún servicio externo se haya invocado:
+
+```csharp
+// Arrange
+var state = new TestState();
+state.ValidatorMock
+    .Setup(v => v.ValidateAsync(It.IsAny<T>(), It.IsAny<CancellationToken>()))
+    .ReturnsAsync(new ValidationResult(new[] {
+        new ValidationFailure("Field", expectedError)
+    }));
+var request = state.RequestBuilder.Build();
+
+// Act
+var result = await state.Handler.Execute(request);
+
+// Assert
+result.IsSuccess.Should().BeFalse();
+result.Errors.Should().Contain(expectedError);
+
+// Cuando el handler expone mocks: verificar que no se llamaron
+state.CodeGeneratorMock.Verify(cg => cg.Generate(It.IsAny<int>()), Times.Never);
+state.EmailServiceMock.Verify(e => e.SendAsync(It.IsAny<EmailMessage>(), It.IsAny<CancellationToken>()), Times.Never);
+```
+
+Donde los repositorios son implementaciones InMemory concretas (no mocks), el short-circuit se prueba arquitectónicamente mediante el test de `BaseUseCase` — los tests de handler verifican que el `Result.Failure` se propaga correctamente sin necesidad de seed data.
+
+### 11.5 Estrategia de dobles de prueba
+
+| Dependencia | Strategy | Razón |
+|-------------|----------|-------|
+| `IEventRepository` | **EF Core InMemory** | Los handlers ejecutan consultas reales (Include, Sum, Any, predicados). Mockearlo sería mockear toda la lógica de negocio. |
+| `IReservationRepository` | **EF Core InMemory** | Ídem: `ExistsByCodeAsync`, `GetCurrentOccupationByEventIdAsync`, `GetByCodeAsync` son consultas reales con lógica de negocio. |
+| `IVenueRepository` | **EF Core InMemory** | Necesario para validación de FK Venue en Eventos. |
+| `IUserRepository` | **EF Core InMemory** | Necesario para validación de existencia de usuario en Login. |
+| `IValidator<T>` | **Moq** (dual) | Por defecto retorna válido para tests de reglas de negocio. En tests de validación-rejection se configura para retornar errores y verificar short-circuit del handler. |
+| `IJwtService` | **Moq** | Servicio externo: genera tokens JWT reales. No depende de datos de la aplicación. |
+| `IPasswordHasher` | **Moq** | Servicio externo: hashea contraseñas con BCrypt. No depende del modelo de dominio. |
+| `IAlphaNumericCodeGenerator` | **Moq** | Servicio externo: genera códigos alfanuméricos. Se mockea para controlar colisiones. |
+| `IEmailService` | **Moq** | Servicio externo: envía emails SMTP. Se mockea para verificar que se llamó con el contenido correcto. |
+| `IDateTimeProvider` | **FakeTimeProvider** | Implementación real con tiempo fijo. Se inyecta en los handlers y en los constructores de los repositorios InMemory. |
+
+**Regla**: implementación real para todo lo que sea lógica de la aplicación (repositorios, tiempo); mock para todo lo que sea un límite del sistema (email, JWT, hashing, generación de códigos, validación de entrada).
+
+### 11.6 Aislamiento y paralelismo
+
+- Cada `[Fact]` crea su propio `TestState` con un `Guid.NewGuid()` como nombre de base de datos InMemory → cero contaminación entre tests.
+- No hay estado estático compartido entre tests (excepto `FakeTimeProvider.ColombiaNow` que es readonly).
+- xUnit ejecuta tests en paralelo por defecto al ensamblado.
+- 39 tests completos en ~2 segundos.
+
+### 11.7 Cobertura por handler
+
+| Handler | Tests | Ramas de negocio cubiertas |
+|---------|-------|---------------------------|
+| `BaseUseCase<T,T>` (abstracto) | 1 | Short-circuit: validación falla → `OnExecute` no se ejecuta |
+| `AddVenueHandler` | 1 | Add + SaveChanges |
+| `GetVenuesHandler` | 1 | GetAll |
+| `LoginHandler` | 3 | GetByUsername, Verify, Generate + user not found, wrong password |
+| `LogoutHandler` | 1 | RevokeToken |
+| `AddEventHandler` | 5 | Venue exists, capacity ≤ venue, no overlap, Add + SaveChanges + validación rechazada |
+| `GetEventsHandler` | 1 | GetAll con Venue Include |
+| `GetOccupationReportHandler` | 2 | Report exists, event not found |
+| `AddReservationHandler` | 9 | Event exists, is active, not started, ≥1hr, capacity, <24hrs+qty>5, price>100+qty>10, Add + SaveChanges + validación rechazada |
+| `GetReservationsHandler` | 1 | GetAll |
+| `GetByReservationCodeHandler` | 2 | Exists with Event Include, not found |
+| `CancelReservationHandler` | 6 | Exists, already cancelled, not confirmed, event exists, penalty calc, Update + SaveChanges + validación rechazada |
+| `ConfirmReservationHandler` | 6 | Code gen loop, exists, already cancelled, already confirmed, Update + SaveChanges + Email + validación rechazada |
+
+**Total: 13 targets de test (12 handlers + BaseUseCase), 39 tests. Cada handler cubre reglas de negocio + el camino de validación rechazada.**
+
+### 11.8 Agregar un test nuevo
+
+**Para tests de reglas de negocio:**
+1. Ubicar el directorio `Features/{FeatureName}/{Operation}/`
+2. Heredar de `HandlerTestBase` y definir `TestState` anidado con handlers, repositorios y builders
+3. Usar `Seed*Async` para datos de prueba y `RequestBuilder` para el request
+4. Escribir el `[Fact]` con nombre `{Handler}_When{Scenario}_Then{Result}`
+5. Marcar `// Arrange`, `// Act`, `// Assert`
+6. Verificar: `dotnet test --filter "FullyQualifiedName~{Handler}"`
+
+**Para tests de validación-rejection (short-circuit):**
+1. Si es un handler concreto: sobreescribir el mock del validator en `TestState` para retornar errores
+2. Si es la base abstracta: crear un `TestDoubleUseCase` inline con flag `OnExecuteCalled`
+3. No se necesita seed data — la validación falla antes de llegar a la lógica de negocio
+4. Verificar: `result.IsSuccess.Should().BeFalse()`, `Errors.Contains()`, y si hay mocks expuestos: `Times.Never`<｜｜DSML｜｜parameter name="newString" string="true">### 11.8 Agregar un test nuevo
+
+**Para tests de reglas de negocio:**
+1. Ubicar el directorio `Features/{FeatureName}/{Operation}/`
+2. Heredar de `HandlerTestBase` y definir `TestState` anidado con handlers, repositorios y builders
+3. Usar `Seed*Async` para datos de prueba y `RequestBuilder` para el request
+4. Escribir el `[Fact]` con nombre `{Handler}_When{Scenario}_Then{Result}`
+5. Marcar `// Arrange`, `// Act`, `// Assert`
+6. Verificar: `dotnet test --filter "FullyQualifiedName~{Handler}"`
+
+**Para tests de validación-rejection (short-circuit):**
+1. Si es un handler concreto: sobreescribir el mock del validator en `TestState` para retornar errores
+2. Si es la base abstracta: crear un `TestDoubleUseCase` inline con flag `OnExecuteCalled`
+3. No se necesita seed data — la validación falla antes de llegar a la lógica de negocio
+4. Verificar: `result.IsSuccess.Should().BeFalse()`, `Errors.Contains()`, y si hay mocks expuestos: `Times.Never`
